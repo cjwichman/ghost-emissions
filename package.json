@@ -1,0 +1,3 @@
+{ "name": "ghost-emissions", "private": true, "type": "module",
+  "scripts": { "test": "node model/test.mjs", "calibrate": "node model/calibrate.mjs", "seed": "node supabase/seed.mjs", "sync-model": "cp model/model.js supabase/functions/_shared/model.js" },
+  "dependencies": { "@supabase/supabase-js": "^2.45.0" } }
