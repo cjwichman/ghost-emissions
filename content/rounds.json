@@ -26,7 +26,7 @@
     "borough": "1. Whoever is mayor this week submits a target.\n2. Anyone can save a draft.\n3. Nothing counts this week."
    },
    "tips": "Practice round. Confirm every student can log in and is on a team. Check the mayor rotation shows the right names.",
-   "example": "Project the firm page. Move output to 100 and containment to 0: profit $3,000, 20 t of ghosts. Move containment to 50%: profit falls, ghosts halve. Nobody pays you for that. Ask why a firm would ever contain."
+   "example": "Project the business page. Move output to 100 and containment to 0: profit $3,000, 20 t of ghosts. Move containment to 50%: profit falls, ghosts halve. Nobody pays you for that. Ask why a business would ever contain."
   }
  },
  {
@@ -47,14 +47,14 @@
    },
    "briefing": {
     "student": "This is the first round that counts. Every business in the city decides how much to make and how many ghosts to contain, and nobody pays anything for what they release. The Institute expects the Ether to move on Monday, and expects most of you to release freely, because that is what the arithmetic rewards. Watch what your profit does when you contain. Then watch what the sky does when nobody does.",
-    "firm": "Your ghosts and everyone else's go into the same sky. Choose output and containment. Profit is yours. Hauntings are everyone's."
+    "firm": "Your ghosts and everyone else's go into the same sky. Choose output and containment. Profit is yours. Slime damage is everyone's."
    },
    "howto": {
-    "firm": "1. Choose output and containment.\n2. Watch profit. Notice what containment does to it.\n3. Submit by Sunday.",
+    "firm": "1. Choose output and containment.\n2. Watch profit. Notice what containment does to it.\n3. Submit by Sunday night.",
     "borough": "1. Agree a target with your team.\n2. The mayor submits it.\n3. Nothing forces your businesses to hit it."
    },
-   "tips": "Expect near-zero containment everywhere. That is the point. Monday: show the Ether tick up and ask what would change a firm's mind.",
-   "example": "Ridgeline Cement, type 3. Output 100, containment 0: profit $3,000, 20 t. Containment 50%: profit $2,250, 10 t. The 10 t contained are worth nothing to the firm. That gap is the externality."
+   "tips": "Expect near-zero containment everywhere. That is the point. Monday: show the Ether tick up and ask what would change a business's mind.",
+   "example": "Coalbrook Brewery, type 3. Output 100, containment 0: profit $3,000, 20 t. Containment 50%: profit $2,250, 10 t. The 10 t contained are worth nothing to the business. That gap is the externality."
   }
  },
  {
@@ -75,10 +75,10 @@
     "text": "The chart now shows what one more ghost costs the whole city, about $200, against your borough's cost of containing it."
    },
    "briefing": {
-    "student": "The Institute has put a number on it: one more ton of ghosts costs the city about $200 in hauntings over the semester. Your borough page now shows that number as a line against your own cost of containment. Nothing binds yet. The question this week is what your borough would contain if it took the $200 seriously, and what it actually contains when nobody has to.",
+    "student": "The Institute has put a number on it: one more ton of ghosts costs the city about $200 in slime damage over the semester. Your borough page now shows that number as a line against your own cost of containment. Nothing binds yet. The question this week is what your borough would contain if it took the $200 seriously, and what it actually contains when nobody has to.",
     "firm": "Same decision as last week. Look at how much your borough would need to contain for containment to cost as much as the harm."
    },
-   "tips": "Board example: aggregate MAC for 45 firms against MD = $200. Optimal containment about 46%. Shade the deadweight loss of zero containment. Ask whether any borough gains by containing alone.",
+   "tips": "Board example: aggregate MAC for 45 businesses against MD = $200. Optimal containment about 46%. Shade the deadweight loss of zero containment. Ask whether any borough gains by containing alone.",
    "example": "Coalbrook: containment target 0% costs nothing and does nothing. Target 46% is where the borough MAC meets $200. The triangle between them is the loss from free-riding, per week."
   }
  },
@@ -96,14 +96,14 @@
    "borough": {
     "type": "rate",
     "title": "Choose your borough's discount rate",
-    "text": "Between 2% and 7% a year. Locked once the round closes. It sets how much your score counts future hauntings."
+    "text": "Between 2% and 7% a year. Locked once the round closes. It sets how much your score counts future slime damage."
    },
    "briefing": {
     "student": "A quiet week, by design. Mayors choose how much their borough cares about the future: a discount rate between 2% and 7%, locked for the rest of the game. It sounds like bookkeeping. It is closer to a personality. Patient boroughs will pay now to keep the Ether down later. Impatient ones will look sharp on the leaderboard for a while.",
     "firm": "Same decision. Short round."
    },
-   "tips": "Show the same haunting path discounted at 2% and 7%. Ask who wins by round 12.",
-   "example": "A borough at 7% values round 12 hauntings at about half of what a 2% borough does. It contains less now and looks better early."
+   "tips": "Show the same slime damage path discounted at 2% and 7%. Ask who wins by round 12.",
+   "example": "A borough at 7% values round 12 slime damage at about half of what a 2% borough does. It contains less now and looks better early."
   }
  },
  {
@@ -120,7 +120,7 @@
    "borough": {
     "type": "budget",
     "title": "Reallocate the borough budget",
-    "text": "New estimates say hauntings are worse in some boroughs than the Institute thought. Split your budget across trap subsidy, trap R&D, haunting defense, and reserve."
+    "text": "New estimates say slime damage are worse in some boroughs than the Institute thought. Split your budget across trap subsidy, trap R&D, slime defense, and reserve."
    },
    "events": {
     "damageRevision": {
@@ -129,11 +129,11 @@
     }
    },
    "briefing": {
-    "student": "The Institute has revised its damage estimates, and the news is bad for some of you. Two boroughs are more exposed than anyone believed, effective immediately. The ghosts already in the sky do not care that the estimate changed. Mayors now control a budget: trap subsidies, trap R&D, haunting defense, or reserve. Spend it like the estimate might be revised again, because it might.",
+    "student": "The Institute has revised its damage estimates, and the news is bad for some of you. Two boroughs are more exposed than anyone believed, effective immediately. The ghosts already in the sky do not care that the estimate changed. Mayors now control a budget: trap subsidies, trap R&D, slime defense, or reserve. Spend it like the estimate might be revised again, because it might.",
     "firm": "Your borough may start subsidizing containment. Watch the profit preview."
    },
    "tips": "Fill in events.damageRevision.teamIds with two team ids before Monday (Marsh End and Harborline suggested). Discuss why estimates get revised.",
-   "example": "Marsh End at 2x exposure: hauntings double for the same Ether. Ask what a rational mayor does with the budget."
+   "example": "Marsh End at 2x exposure: slime damage double for the same Ether. Ask what a rational mayor does with the budget."
   }
  },
  {
@@ -157,7 +157,7 @@
     "title": "Vote on the city's price on ghosts"
    },
    "briefing": {
-    "student": "Every borough sees a different cost per ghost, because every borough has different income and different exposure. This week each borough reports its own number and votes on one price for the whole city. The median vote wins. Think about what that mechanism rewards, and whose hauntings it leaves out of the count.",
+    "student": "Every borough sees a different cost per ghost, because every borough has different income and different exposure. This week each borough reports its own number and votes on one price for the whole city. The median vote wins. Think about what that mechanism rewards, and whose slime damage it leaves out of the count.",
     "firm": "Same decision. Forecast the vote."
    },
    "tips": "Show the distribution of votes Monday. Low-exposure boroughs vote low. Talk equity weights.",
@@ -187,7 +187,7 @@
     "firm": "Your borough's policy from last week applies now. The chart shows your cost of containment against the price."
    },
    "tips": "Most mayors set below $200. Point at the map: price on ghosts. Ask why nobody sets $200. Cap and tax are equivalent this week because costs are known.",
-   "example": "Ridgeline Cement under a $120 tax: contain until MAC = 120, so 20% for a type 3 firm. Profit $1,000."
+   "example": "Coalbrook Brewery under a $120 tax: contain until MAC = 120, so 20% for a type 3 business. Profit $1,000."
   }
  },
  {
@@ -217,7 +217,7 @@
     "firm": "Same decision. Cost of containment may not be what the chart shows by Monday."
    },
    "tips": "Weitzman week. After the shock: caps hold ghosts fixed and prices jump, taxes hold price fixed and ghosts rise. Compare two boroughs that chose differently.",
-   "example": "Cost shock x1.3. Under a $120 tax a type 3 firm drops from 20% to 15% containment. Under a cap the permit price rises 30% and ghosts stay put."
+   "example": "Cost shock x1.3. Under a $120 tax a type 3 business drops from 20% to 15% containment. Under a cap the permit price rises 30% and ghosts stay put."
   }
  },
  {
@@ -235,13 +235,13 @@
     "type": "instrument+budget",
     "chart": true,
     "title": "Set your tool and decide what to do with the revenue",
-    "text": "Tax revenue funds the budget. Subsidy returns it to businesses per ton contained. Defense protects households from hauntings."
+    "text": "Tax revenue funds the budget. Subsidy returns it to businesses per ton contained. Defense protects households from slime damage."
    },
    "briefing": {
-    "student": "Ghost taxes are raising real money now, and money has to go somewhere. Mayors decide: hand it back to businesses as a subsidy per ton contained, spend it defending households from hauntings, bank it. Your businesses have opinions, and the note box exists for a reason. The tax is only half the policy. The other half is where the revenue lands.",
+    "student": "Ghost taxes are raising real money now, and money has to go somewhere. Mayors decide: hand it back to businesses as a subsidy per ton contained, spend it defending households from slime damage, bank it. Your businesses have opinions, and the note box exists for a reason. The tax is only half the policy. The other half is where the revenue lands.",
     "firm": "Same decision. Ask your mayor where the tax money goes."
    },
-   "tips": "Incidence: firms complain in notes. Read one aloud. Ask who bears the tax.",
+   "tips": "Incidence: businesses complain in notes. Read one aloud. Ask who bears the tax.",
    "example": "A $120 tax raises about $10,000 in Coalbrook. Returned as a per-ton subsidy it doubles the containment incentive at zero net cost."
   }
  },
@@ -284,18 +284,18 @@
    "borough": {
     "type": "instrument+budget",
     "chart": true,
-    "title": "Containment or haunting defense",
-    "text": "Defense reduces your hauntings this round. Containment reduces everyone's, later. The Breach may happen after decisions close."
+    "title": "Containment or slime defense",
+    "text": "Defense reduces your slime damage this round. Containment reduces everyone's, later. The Breach may happen after decisions close."
    },
    "events": {
     "breach": {}
    },
    "briefing": {
-    "student": "Two decisions and one warning. The decisions: keep containing, or spend on haunting defense that protects your borough now and does nothing for the sky. The warning: the Institute's instruments show the Breach becomes possible once the Ether passes 2.0, and its odds rise with every tenth of a degree. If it opens, exposure jumps for everyone, permanently. The dice are loaded with your own emissions.",
+    "student": "Two decisions and one warning. The decisions: keep containing, or spend on slime defense that protects your borough now and does nothing for the sky. The warning: the Institute's instruments show the Breach becomes possible once the Ether passes 2.0, and its odds rise with every tenth of a degree. If it opens, exposure jumps for everyone, permanently. The dice are loaded with your own emissions.",
     "firm": "Same decision. Forecast the Ether carefully."
    },
    "tips": "Adaptation vs mitigation. Then fat tails: the Breach probability rises with the Ether above 2. It is a draw, not a certainty.",
-   "example": "Marsh End spending 30% of budget on defense cuts hauntings by about 30% this round and does nothing for the sky."
+   "example": "Marsh End spending 30% of budget on defense cuts slime damage by about 30% this round and does nothing for the sky."
   }
  },
  {
@@ -313,7 +313,7 @@
     "type": "yesno",
     "yesLabel": "Fund the Dimmer",
     "noLabel": "Do not fund",
-    "choiceText": "The Dimmer lowers the Ether for everyone next round if enough boroughs pay in. Side effects unknown.",
+    "choiceText": "The Dimmer lowers the Ether for everyone next round if enough boroughs pay in. Side effects unknown. The Institute's engineers advise, without elaborating, that you should not cross the streams.",
     "title": "Fund the Dimmer?"
    },
    "briefing": {

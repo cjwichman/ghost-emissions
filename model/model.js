@@ -40,7 +40,7 @@ export const DEFAULT_PARAMS = {
 };
 
 // Nine boroughs. Archetype in the description. income is dollars per round.
-// exposure d: hauntings = d * T^2 * income * (1 - g). Sum(d*income) ~ 41,000
+// exposure d: slime damage = d * T^2 * income * (1 - g). Sum(d*income) ~ 41,000
 // gives a marginal damage near $200 per ton along the cooperative path.
 export const DEFAULT_BOROUGHS = [
   { key: 'harborline',  name: 'Harborline',     income: 55000, exposure: 0.16, ghostMult: 0.9, techMult: 1.0, blurb: 'Rich waterfront. Ghosts pour in off the harbor and flood basements. High exposure.' },
@@ -48,9 +48,9 @@ export const DEFAULT_BOROUGHS = [
   { key: 'northgate',   name: 'Northgate',      income: 45000, exposure: 0.05, ghostMult: 1.1, techMult: 1.0, blurb: 'Cold, resource-rich, low exposure. The Ether barely reaches this far north, for now.' },
   { key: 'lumen',       name: 'Lumen Heights',  income: 60000, exposure: 0.09, ghostMult: 0.7, techMult: 0.8, blurb: 'Small, rich, tech-heavy. Builds the best ghost traps in the city.' },
   { key: 'exchange',    name: 'Old Exchange',   income: 70000, exposure: 0.07, ghostMult: 0.8, techMult: 1.0, blurb: 'Downtown finance. Rich, low exposure, moderate ghosts.' },
-  { key: 'fenwick',     name: 'Fenwick Island', income: 25000, exposure: 0.22, ghostMult: 0.5, techMult: 1.0, blurb: 'Small island borough. Releases almost nothing, and drowns in hauntings when the Ether rises.' },
+  { key: 'fenwick',     name: 'Fenwick Island', income: 25000, exposure: 0.22, ghostMult: 0.5, techMult: 1.0, blurb: 'Small island borough. Releases almost nothing, and drowns in slime damage when the Ether rises.' },
   { key: 'coalbrook',   name: 'Coalbrook',      income: 40000, exposure: 0.15, ghostMult: 1.2, techMult: 1.0, blurb: 'Fast-growing and smoky. High emissions, high exposure.' },
-  { key: 'marshend',    name: 'Marsh End',      income: 22000, exposure: 0.25, ghostMult: 0.8, techMult: 1.1, blurb: 'Poor outer borough on the marsh. Hauntings hit hardest here.' },
+  { key: 'marshend',    name: 'Marsh End',      income: 22000, exposure: 0.25, ghostMult: 0.8, techMult: 1.1, blurb: 'Poor outer borough on the marsh. Slime damage hit hardest here.' },
   { key: 'midtown',     name: 'Midtown Common', income: 42000, exposure: 0.10, ghostMult: 1.0, techMult: 1.0, blurb: 'Average on everything. The median borough.' },
 ];
 
@@ -124,7 +124,7 @@ export function clearCap(firms, decisions, capTons, subsidy, P = DEFAULT_PARAMS)
  * firms:     [{ studentId, type }]
  * decisions: firm decisions aligned to firms
  * bDecision: { policy:{kind,tau,capTons,aMin}, budget:{subsidy,rd,defense,reserve} shares (sum 1) }
- * ether:     Ether reading used for hauntings this round
+ * ether:     Ether reading used for slime damage this round
  */
 export function boroughOutcome(team, firms, decisions, bDecision, ether, P = DEFAULT_PARAMS) {
   const card = team.params;
@@ -172,7 +172,7 @@ export function boroughOutcome(team, firms, decisions, bDecision, ether, P = DEF
  * state:  { concentration, teams: { [teamId]: {techMult, exposureMult, discountRate, subsidyVoided} } }
  * teams:  [{ id, params, firms:[{studentId,type}], decisions:[...], bDecision }]
  * events: { damageRevision:{teamIds,mult}, costShock:{mult}, breach:{roll}, inspector:{teamId} }
- * Ether used for hauntings is the reading AFTER this round's emissions.
+ * Ether used for slime damage is the reading AFTER this round's emissions.
  */
 export function resolveRound(state, teams, events = {}, P = DEFAULT_PARAMS) {
   const stTeams = { ...(state.teams ?? {}) };
@@ -202,7 +202,7 @@ export function resolveRound(state, teams, events = {}, P = DEFAULT_PARAMS) {
   }
   if (breach) for (const x of pre) x.ts.exposureMult = (x.ts.exposureMult ?? 1) * P.events.breachDamageMult;
 
-  // second pass: hauntings and welfare at this round's Ether
+  // second pass: slime damage and welfare at this round's Ether
   const results = pre.map(({ t, ts }) => {
     const out = boroughOutcome({ params: t.params, ...ts }, t.firms, t.decisions, t.bDecision, ether, Pround);
     stTeams[t.id] = { ...ts, techMult: out.techMultNext, subsidyVoided: false };

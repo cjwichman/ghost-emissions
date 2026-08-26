@@ -5,18 +5,18 @@ export const GHOST_SVG = (size = 18, fill = "#6CC24A") => `<svg width="${size}" 
 const marker = (x, y, fill) => `<g transform="translate(${x},${y}) scale(0.6) translate(-12,-12)"><path d="${GHOST_PATH}" fill="${fill}"/><ellipse cx="10.7" cy="9.7" rx="1.1" ry="1.5" fill="#1B2233"/><ellipse cx="15.2" cy="9.7" rx="1.1" ry="1.5" fill="#1B2233"/><ellipse cx="13" cy="13.8" rx="1.3" ry="2.1" fill="#1B2233"/></g>`;
 
 export const TRADES = {
-  1: { trade: "Bakery", unit: "batches", blurb: "You run the borough's bakery. Ovens vent gently, so traps clip right on. Cheapest containment in the borough." },
+  1: { trade: "Bakery", unit: "batches", blurb: "You run the borough's bakery. Ovens vent gently, so traps clip right on and a hand-held proton pack covers the rest. Cheapest containment in the borough." },
   2: { trade: "Laundry", unit: "loads", blurb: "You run the borough's laundry. Ghosts ride the steam, and filters catch most of them. Cheap containment." },
   3: { trade: "Brewery", unit: "barrels", blurb: "You run the borough's brewery. Fermentation leaks, but traps fit the vents. Mid-priced containment." },
   4: { trade: "Freight depot", unit: "truckloads", blurb: "You run the borough's freight depot. Ghosts escape on the road, where traps can't reach. Expensive containment." },
-  5: { trade: "Foundry", unit: "castings", blurb: "You run the borough's foundry. Ghosts pour off white-hot metal. Most expensive containment in the borough." },
+  5: { trade: "Foundry", unit: "castings", blurb: "You run the borough's foundry. Ghosts pour off white-hot metal, and even industrial proton packs strain to keep up. Most expensive containment in the borough." },
 };
 
 export const KEY_ROWS = [
   ["Ghost emissions", "greenhouse gas emissions"],
   ["Ghost concentration", "the stock of GHGs in the atmosphere"],
   ["The Ether", "global temperature"],
-  ["Hauntings", "climate damages"],
+  ["Slime damage", "climate damages"],
   ["Containment", "abatement"],
   ["Trap technology", "abatement technology"],
   ["The Institute", "your Monday briefing"],
@@ -77,7 +77,7 @@ const SHAPES = {
   marshend: "44,176 160,164 164,236 48,242", harborline: "160,164 252,166 254,238 164,236", fenwick: "292,268 344,258 362,286 320,300 288,290",
 };
 const SCALES = {
-  haunt: ["#EDE9F5", "#6E5A9E", "Light", "Heavy hauntings", v => "$" + Math.round(v / 1000) + "k"],
+  haunt: ["#EDE9F5", "#6E5A9E", "Light", "Heavy slime damage", v => "$" + Math.round(v / 1000) + "k"],
   tax: ["#FBE7DD", "#E0713C", "$0", "$200 on ghosts", v => "$" + Math.round(v)],
   ghosts: ["#E6F5DF", "#3F8A29", "Few", "Many ghosts", v => Math.round(v) + " t"],
   contain: ["#F0F0F0", "#1B2233", "0%", "100% contained", v => Math.round(v * 100) + "%"],

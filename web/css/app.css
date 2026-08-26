@@ -1,11 +1,11 @@
 :root{--fog:#EEF0F3;--paper:#fff;--ink:#1B2233;--ink2:#5A6272;--line:#D8DCE2;--ecto:#6CC24A;--ecto-deep:#3F8A29;--ecto-soft:#E6F5DF;--ember:#E0713C;--ember-soft:#FBE7DD;--haunt:#6E5A9E;--haunt-soft:#E9E4F3;--ok:#3F8F5A;--display:'Space Grotesk',sans-serif;--body:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
-*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:clip}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden}
 body{background:var(--fog);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
 .small{font-size:12px;color:var(--ink2)}
-.appbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.appbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
 .appbar .brand{font-family:var(--display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
 .appbar nav{display:flex;gap:4px;margin-left:8px}
 .appbar nav a{text-decoration:none;color:var(--ink2);padding:6px 10px;border-radius:999px;font-size:13px}
@@ -77,3 +77,6 @@ svg{max-width:100%;height:auto}
 .howto-strip p{margin:4px 0}
 .prehdr{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:10px 0 4px}
 .tally{font-size:13px;color:var(--ink2);margin-top:8px}
+
+.wrap{overflow-x:hidden}
+@media(max-width:760px){details .body{overflow-x:auto}table{min-width:420px}details .body table{font-size:12px}.appbar .who{width:100%;justify-content:flex-end}}

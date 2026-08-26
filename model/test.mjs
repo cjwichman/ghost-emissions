@@ -33,7 +33,7 @@ assert.ok(Math.abs(bo.firms.reduce((s, f) => s + f.permitBill, 0)) < 1e-6);
 const bs = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: { kind: 'standard', aMin: 0.3 }, budget: { reserve: 1 } }, 1.0);
 assert.ok(bs.firms.every(f => f.a >= 0.3));
 
-// budget: subsidy raises containment under a tax? (subsidy adds to price under cap only) ; R&D lowers techMult; defense lowers hauntings
+// budget: subsidy raises containment under a tax? (subsidy adds to price under cap only) ; R&D lowers techMult; defense lowers slime damage
 const b1 = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: { kind: 'none' }, budget: { rd: 0.5, reserve: 0.5 } }, 1.0);
 assert.ok(b1.techMultNext < 1);
 const b2 = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: { kind: 'none' }, budget: { defense: 0.5, reserve: 0.5 } }, 1.0);

@@ -8,9 +8,9 @@ Two parts. Part A is the one-page world sheet students read in week 1. Part B is
 
 ### The world
 
-One city, nine boroughs, one sky. Businesses make things people want. Making things releases ghost emissions. Ghosts accumulate in the air as ghost concentration, which nobody owns and nobody can clean up. As concentration rises, the Ether rises, and hauntings get worse everywhere. Hauntings cost money. Some boroughs are hit harder than others.
+One city, nine boroughs, one sky. Businesses make things people want. Making things releases ghost emissions. Ghosts accumulate in the air as ghost concentration, which nobody owns and nobody can clean up. As concentration rises, the Ether rises, and slime damage gets worse everywhere. Slime damage costs money. Some boroughs are hit harder than others.
 
-Nobody wants to stop making things. Everyone would like fewer hauntings. That is the whole problem.
+Nobody wants to stop making things. Everyone would like fewer slime damage. That is the whole problem.
 
 ### Vocabulary
 
@@ -19,7 +19,7 @@ Nobody wants to stop making things. Everyone would like fewer hauntings. That is
 | Ghost emissions | Greenhouse gas emissions |
 | Ghost concentration | Atmospheric CO2 (cumulative stock) |
 | The Ether | Global temperature |
-| Hauntings | Climate damages |
+| Slime damage | Climate damages |
 | Containment unit | One unit of abatement (one ton of ghosts kept out of the air) |
 | Trap technology | Abatement technology. Better traps mean cheaper containment |
 | The Institute | The weekly briefing you get every Monday |
@@ -38,7 +38,7 @@ Each team is a borough. Each student is CEO of one business in that borough. Bus
 
 ### Scores
 
-Boroughs: discounted borough welfare (business profits plus government revenue minus hauntings and spending). Businesses: cumulative profit. Everyone: forecast accuracy. Participation credit for submitting. Rank is for glory.
+Boroughs: discounted borough welfare (business profits plus government revenue minus slime damage and spending). Businesses: cumulative profit. Everyone: forecast accuracy. Participation credit for submitting. Rank is for glory.
 
 ### Boroughs (draft names, archetype in parentheses)
 
@@ -49,7 +49,7 @@ Boroughs: discounted borough welfare (business profits plus government revenue m
 5. Old Exchange (rich downtown, low exposure, big financial businesses)
 6. Fenwick Island (small island borough, tiny emissions, high exposure)
 7. Coalbrook (fast-growing, high emissions, high exposure)
-8. Marsh End (poor outer borough, worst hauntings)
+8. Marsh End (poor outer borough, worst slime damage)
 9. Midtown Common (mid-income, average on everything)
 
 Names are placeholders. Borough cards show every parameter. Nothing is hidden about a borough. Only other teams' current-week choices are hidden.
@@ -90,7 +90,7 @@ At `tau = 200`: type 1 abates 100%, type 2 50%, type 3 33%, type 4 25%, type 5 2
 ### Damages, game version
 
 - Stock model. Ghost concentration `S_t = S_{t-1} + E_t`. Ether `T_t = T_0 + k*S_t`.
-- Borough hauntings `D_it = d_i * T_t^2 * Y_i`.
+- Borough slime damage `D_it = d_i * T_t^2 * Y_i`.
 - Calibrate `k`, `d_i`, `Y_i`, and the horizon so that (a) the marginal damage of one ton along the cooperative path is about $200, (b) universal free-riding ends with the Ether at 3.0, (c) the cooperative path ends at 2.0. Done numerically in the model module. Students see the Ether on a 0 to 4 gauge with a marker at 2, and concentration as a secondary number.
 
 ### Events (parameters to fix later)
