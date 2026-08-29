@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
         return d;
       });
       const out = boroughOutcome({ params: team.params, ...ts }, team.firms, decisions, payload, ether, P);
-      return json({ ok: true, ghosts: out.ghosts, contained: out.contained, taxRevenue: out.taxRevenue, profits: out.profits, hauntings: out.hauntings, welfare: out.welfare, permitPrice: out.permitPrice, protection: out.protection, subsidyPerTon: out.subsidyPerTon, ether });
+      return json({ ok: true, ghosts: out.ghosts, contained: out.contained, taxRevenue: out.taxRevenue, profits: out.profits, slimeDamage: out.slimeDamage, welfare: out.welfare, permitPrice: out.permitPrice, protection: out.protection, subsidyPerTon: out.subsidyPerTon, ether });
     }
     return json({ error: "unknown kind" }, 400);
   } catch (e) { return json({ error: String(e) }, 500); }

@@ -4,6 +4,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SUPABASE_URL, SUPABASE_ANON_KEY, FUNCTIONS_URL } from "./config.js";
 import { GHOST_SVG, KEY_ROWS, TRADES, drawMAC, drawEther, drawMap, drawLeaderboard } from "./ui.js";
 
+// Mirrors the business parameters in model/model.js. Used only to preview a
+// decision while the sliders move. Every number that counts is computed on the
+// server, so keep these in step with the model after any change there.
+const BIZ = { margin: 150, curve: 0.75, ghostsPerUnit: 0.2, macSlope: 200 };
+
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { db: { schema: "ghost" } });
 const $ = s => document.querySelector(s);
 const fmt = n => (n < 0 ? "-" : "") + "$" + Math.abs(Math.round(n)).toLocaleString();
@@ -184,19 +189,19 @@ async function viewFirm() {
     ${fcfg.chart ? `<div class="chart"><div id="mac"></div><div class="cap">Your marginal cost of containment. ${policy.kind === "tax" ? "Where it crosses the tax line, one more ton contained costs the same as one more ton taxed." : ""}</div></div>` : ""}
     ${cfg.briefing?.firm ? drawer("From the Institute", `<div class="brief">${cfg.briefing.firm.split("\n").map(p => `<p>${esc(p)}</p>`).join("")}</div>`, true) : ""}
     ${drawer("Forecast for next round", `<p>What will the Ether read next Monday?${etherReading ? ` The current reading is ${etherReading}.` : ""}</p><input class="field" id="fc" type="number" step="0.01" min="0" max="4" value="${mine?.forecast ?? ""}" ${closed ? "disabled" : ""} placeholder="e.g. 0.75">`)}
-    ${drawer("Your business", `<dl class="kv"><dt>Trade</dt><dd>${esc(T.blurb)}</dd><dt>Ghosts</dt><dd>Your business releases 0.2 t of ghosts per ${esc(T.unit.replace(/s$/, ""))} before containment.</dd><dt>Margin</dt><dd>$30 per ${esc(T.unit.replace(/s$/, ""))} before ghosts.</dd><dt>Containment</dt><dd>Cheap for the first few ghosts, expensive for the last few.</dd></dl>`, round.number <= 1)}
+    ${drawer("Your business", `<dl class="kv"><dt>Trade</dt><dd>${esc(T.blurb)}</dd><dt>Ghosts</dt><dd>Your business releases 0.2 t of ghosts per ${esc(T.unit.replace(/s$/, ""))} before containment.</dd><dt>Earnings</dt><dd>Demand falls as you make more. The first ${esc(T.unit.replace(/s$/, ""))} earns $150 and each one after that earns a little less, so at full output the last one earns nothing. Full output brings in $7,500 before containment and ghosts.</dd><dt>Containment</dt><dd>Cheap for the first few ghosts, expensive for the last few.</dd></dl>`, round.number <= 1)}
     ${keyDrawer(policy.kind === "tax" ? [["Ghost tax", "carbon tax"]] : policy.kind === "cap" ? [["Cap", "cap and trade"]] : [])}
   </div></div>`);
 
   const ghostMult = team.params.ghostMult ?? 1;
-  const slope = 200 * (me.firm_type ?? 3) * (team.params.techMult ?? 1);
+  const slope = BIZ.macSlope * (me.firm_type ?? 3) * (team.params.techMult ?? 1);
   const local = () => {
     const q = +$("#q").value, a = showA ? +$("#a").value / 100 : 0;
     $("#qv").textContent = q + " " + T.unit; if (showA) $("#av").textContent = Math.round(a * 100) + "% of ghosts";
     if (policy.kind === "cap") return { q, a };
-    const base = 0.2 * q * ghostMult, ghosts = base * (1 - a), cont = 0.5 * slope * a * a * base;
+    const base = BIZ.ghostsPerUnit * q * ghostMult, ghosts = base * (1 - a), cont = 0.5 * slope * a * a * base;
     const tax = policy.kind === "tax" ? (policy.tau ?? 0) * ghosts : 0;
-    const profit = 30 * q - cont - tax;
+    const profit = BIZ.margin * q - BIZ.curve * q * q - cont - tax;
     $("#ev").textContent = ghosts.toFixed(1) + " t";
     if (policy.kind === "tax") { $("#cl").textContent = "Tax bill"; $("#cv").textContent = fmt(tax); } else { $("#cl").textContent = "Total containment cost"; $("#cv").textContent = fmt(cont); }
     $("#pv").textContent = fmt(profit); $("#pv").parentElement.className = "stat " + (profit < 0 ? "neg" : "pos");
@@ -253,7 +258,7 @@ async function viewBorough() {
 
   const decisionUI = {
     target: () => `<div class="slider"><div class="lab"><span>Borough containment target</span><span class="num" id="tv"></span></div><input type="range" id="target" min="0" max="100" value="${Math.round((payload.target ?? 0) * 100)}"></div><p class="small">The share of your borough's ghosts you are aiming to contain. A goal, not a rule: nothing forces your businesses to hit it. Policy tools with teeth arrive later in the semester.</p>`,
-    rate: () => `<div class="slider"><div class="lab"><span>Discount rate</span><span class="num" id="rv"></span></div><input type="range" id="rate" min="2" max="7" step="0.5" value="${payload.discountRate != null ? payload.discountRate * 100 : 3}"></div><p class="small">Locked for the rest of the semester once the round closes. A low rate values future slime damage almost as much as today's. A high rate discounts them.</p>`,
+    rate: () => `<div class="slider"><div class="lab"><span>Discount rate</span><span class="num" id="rv"></span></div><input type="range" id="rate" min="2" max="7" step="0.5" value="${payload.discountRate != null ? payload.discountRate * 100 : 3}"></div><p class="small">Locked for the rest of the semester once the round closes. A low rate values future slime damage almost as much as today's. A high rate counts future slime damage for less.</p>`,
     instrument: () => `<div class="seg" id="kind"><button data-k="tax" class="${payload.policy?.kind === "tax" ? "on" : ""}">Ghost tax</button><button data-k="cap" class="${payload.policy?.kind === "cap" ? "on" : ""}">Cap on ghosts</button><button data-k="standard" class="${payload.policy?.kind === "standard" ? "on" : ""}">Containment rule</button></div>
       <div id="tax" style="display:none"><div class="slider"><div class="lab"><span>Tax per ton</span><span class="num" id="tauv"></span></div><input type="range" id="tau" min="0" max="300" step="10" value="${payload.policy?.tau ?? 100}"></div></div>
       <div id="cap" style="display:none"><div class="slider"><div class="lab"><span>Cap, tons for the borough</span><span class="num" id="capv"></span></div><input type="range" id="capTons" min="0" max="${Math.round(teammates.length * 20 * (p.ghostMult ?? 1))}" step="1" value="${payload.policy?.capTons ?? Math.round(teammates.length * 20 * (p.ghostMult ?? 1) * 0.6)}"></div></div>
@@ -283,7 +288,7 @@ async function viewBorough() {
     ${bcfg.chart ? `<div class="chart"><div id="bmac"></div><div class="cap">${esc(team.name)}'s marginal cost of containment against what one more ghost costs the whole city.</div></div>` : ""}
     ${drawer("Your businesses last week", lastFirms.length ? `<table><tr><th>Business</th><th>Contained</th><th>Profit</th><th>Note</th></tr>${lastFirms.map(f => `<tr><td>${esc(f.s?.firm_name ?? ((TRADES[f.data.type] ?? {}).trade ?? f.s?.display_name))}<div class="small">${esc(f.s?.display_name ?? "")}</div></td><td class="num">${Math.round(f.data.a * 100)}%</td><td class="num">${fmt(f.data.profit)}</td><td class="noteq">${esc(f.note ?? "—")}</td></tr>`).join("")}</table>` : `<p class="small">No results yet.</p>`, true)}
     ${cfg.briefing?.student ? drawer("From the Institute", `<div class="brief">${cfg.briefing.student.split("\n").map(x => `<p>${esc(x)}</p>`).join("")}</div>`, true) : ""}
-    ${lastB ? drawer("Last week's results", `<dl class="kv"><dt>Ghosts</dt><dd>${Math.round(lastB.data.ghosts)} t</dd><dt>Slime damage</dt><dd>${fmt(lastB.data.hauntings)}</dd><dt>Welfare</dt><dd>${fmt(lastB.data.welfare)}</dd>${lastB.data.permitPrice != null ? `<dt>Permit price</dt><dd>${fmt(lastB.data.permitPrice)}/t</dd>` : ""}</dl>`) : ""}
+    ${lastB ? drawer("Last week's results", `<dl class="kv"><dt>Ghosts</dt><dd>${Math.round(lastB.data.ghosts)} t</dd><dt>Slime damage</dt><dd>${fmt(lastB.data.slimeDamage)}</dd><dt>Welfare</dt><dd>${fmt(lastB.data.welfare)}</dd>${lastB.data.permitPrice != null ? `<dt>Permit price</dt><dd>${fmt(lastB.data.permitPrice)}/t</dd>` : ""}</dl>`) : ""}
     ${drawer(`${esc(team.name)}'s stats`, `<p class="small">${esc(p.blurb ?? "")}</p><dl class="kv"><dt>Income</dt><dd>${fmt(p.income)} a week.</dd><dt>Exposure</dt><dd>${exposureWord}. Slime damage costs ${esc(team.name)} about ${(p.exposure / 0.13).toFixed(1)}x the city average per point of Ether, relative to income.</dd><dt>Ghosts</dt><dd>${Math.round(20 * (p.ghostMult ?? 1))} t per business at full output (city average 20 t).</dd><dt>Traps</dt><dd>${trapWord}</dd></dl>`)}
     ${keyDrawer([["Ghost tax", "carbon tax"], ["Cap on ghosts", "cap and trade"], ["Containment rule", "performance standard"], ["Exposure", "damage sensitivity"]])}
   </div></div>`);
@@ -330,7 +335,7 @@ async function viewBorough() {
     const r = await callFn("preview", { roundId: round.id, kind: "borough", payload: pl });
     if (!r.ok) return;
     if (!(types.includes("target") && !types.includes("instrument"))) { $("#bev").textContent = Math.round(r.ghosts) + " t"; }
-    $("#bhv").textContent = fmt(r.hauntings);
+    $("#bhv").textContent = fmt(r.slimeDamage);
     if (r.permitPrice != null && pl.policy?.kind === "cap") { $("#bl2").textContent = "Permit price"; $("#brv").textContent = fmt(r.permitPrice) + "/t"; }
     else if (pl.policy?.kind === "tax") { $("#bl2").textContent = "Tax revenue"; $("#brv").textContent = fmt(r.taxRevenue); }
     else { $("#bl2").textContent = "Business profits"; $("#brv").textContent = fmt(r.profits); }
@@ -373,12 +378,12 @@ async function viewBoard() {
   const rankOf = sc => Object.entries(sc).sort((a, b) => b[1].score - a[1].score).map(x => x[0]);
   const order = rankOf(scores), prevOrder = rankOf(prevScores);
   const lb = order.map((id, i) => { const t = teamsAll.find(x => x.id === id); const pi = prevOrder.indexOf(id); return { name: t?.name ?? "?", score: scores[id].score, share: scores[id].containShare, delta: pi < 0 ? 0 : pi - i }; });
-  const mapData = teamsAll.map(t => { const b = bos?.find(x => x.team_id === t.id)?.data; return { key: t.borough_key, name: t.name, haunt: b?.hauntings ?? 0, ghosts: b?.ghosts ?? 0, tax: b?.policy?.kind === "tax" ? b.policy.tau : b?.permitPrice ?? 0, contain: b ? b.contained / Math.max(1, b.baseTons) : 0 }; });
+  const mapData = teamsAll.map(t => { const b = bos?.find(x => x.team_id === t.id)?.data; return { key: t.borough_key, name: t.name, haunt: b?.slimeDamage ?? 0, ghosts: b?.ghosts ?? 0, tax: b?.policy?.kind === "tax" ? b.policy.tau : b?.permitPrice ?? 0, contain: b ? b.contained / Math.max(1, b.baseTons) : 0 }; });
   const brief = last.config?.briefing?.student;
   shell("board", `<div class="hdr" style="align-items:center"><div><div class="eyebrow">The Institute · weekly PKE reading</div><h2>Round ${last.number} results</h2></div></div>
     <div class="strip"><div class="kpi"><div class="eyebrow">The Ether</div><div class="num" style="color:var(--ecto-deep)">${T.ether.toFixed(2)}</div><div class="small">of 4.0 · danger line 2.0</div></div>
       <div class="kpi"><div class="eyebrow">Ghost concentration</div><div class="num">${Math.round(T.concentration).toLocaleString()} t</div><div class="small">+ ${Math.round(T.emitted).toLocaleString()} t this round</div></div>
-      <div class="kpi"><div class="eyebrow">City slime damage</div><div class="num" style="color:var(--haunt)">${fmt(T.hauntings)}</div><div class="small">this round</div></div>
+      <div class="kpi"><div class="eyebrow">City slime damage</div><div class="num" style="color:var(--haunt)">${fmt(T.slimeDamage)}</div><div class="small">this round</div></div>
       <div class="kpi"><div class="eyebrow">Containment</div><div class="num">${Math.round(100 * T.contained / T.baseTons)}%</div><div class="small">of ghosts, city-wide</div></div></div>
     <div class="grid"><div class="panel"><h3>The Ether, round by round</h3><div class="sub">Green: what you all did. Dashed: if every borough contained at the city optimum.</div>${drawEther(series, T.coopEmissionsPerRound, T.emitted, 12)}<div class="legend"><span><i style="background:#6CC24A"></i>Actual</span><span><i style="background:#1B2233"></i>Cooperative path</span><span><i style="background:#E0713C"></i>Danger line</span></div></div>
       <div class="panel"><h3>The city</h3><div class="mapctl" id="mapctl"><button class="on" data-m="haunt">Slime damage</button><button data-m="tax">Price on ghosts</button><button data-m="ghosts">Ghosts</button><button data-m="contain">Containment</button></div><div id="map"></div><div class="legend" id="maplegend"></div></div></div>
@@ -449,7 +454,17 @@ async function viewInstructor() {
     dl("borough_outcomes.csv", toCSV((bo ?? []).map(x => ({ round: rn[x.round_id], borough: tn[x.team_id], ...flat(x.data) }))));
   });
   document.querySelectorAll(".st").forEach(el => el.onchange = async () => { const id = el.closest("tr").dataset.id; const f = el.dataset.f; const v = el.type === "checkbox" ? el.checked : (el.value === "" ? null : (f === "team_id" ? el.value : +el.value)); await sb.from("students").update({ [f]: v }).eq("id", id); });
-  $("#autoassign")?.addEventListener("click", async () => { for (const t of teams) { const members = students.filter(s => s.team_id === t.id && s.active); for (let i = 0; i < members.length; i++) await sb.from("students").update({ firm_type: (i % 5) + 1, minister_order: i + 1 }).eq("id", members[i].id); } route(); });
+  $("#autoassign")?.addEventListener("click", async () => {
+    // Business types cycle 1..5. Boroughs with six or more members would all get
+    // a second type 1, the cheapest to clean up, so the starting type is offset
+    // by the borough's position and the duplicate rotates across the city.
+    for (let ti = 0; ti < teams.length; ti++) {
+      const t = teams[ti];
+      const members = students.filter(s => s.team_id === t.id && s.active);
+      for (let i = 0; i < members.length; i++) await sb.from("students").update({ firm_type: ((i + ti) % 5) + 1, minister_order: i + 1 }).eq("id", members[i].id);
+    }
+    route();
+  });
   document.querySelectorAll(".edit").forEach(b => b.onclick = () => editRound(rounds.find(r => r.id === b.dataset.id)));
   $("#newround")?.addEventListener("click", () => editRound({ class_id: cls.id, number: (rounds.at(-1)?.number ?? -1) + 1, title: "", status: "draft", config: {} }));
 }

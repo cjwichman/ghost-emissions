@@ -16,6 +16,17 @@ Deno.serve(async (req) => {
     const P = { ...DEFAULT_PARAMS, ...(ctx.cls.params ?? {}) };
     const teams = assemble(ctx);
 
+    // The lag rule. A policy set in round t binds businesses in round t+1.
+    // Students are shown last round's policy while they decide and the preview
+    // prices their choice against it, so the resolver has to use the same one or
+    // businesses get charged a tax they never saw. The budget set this round
+    // (subsidy, R&D, defense) applies this round, which is what the preview does
+    // too. The Accord below deliberately overrides this and binds immediately.
+    for (const t of teams) {
+      const lastPolicy = ctx.prevBorough.find((b: any) => b.team_id === t.id)?.payload?.policy ?? { kind: "none" };
+      t.bDecision = { ...(t.bDecision ?? {}), policy: lastPolicy };
+    }
+
     // events: from the round config unless overridden in the request
     const events = { ...(ctx.round.config?.events ?? {}), ...(bodyEvents ?? {}) };
     if (events.breach && events.breach.roll == null) events.breach = { roll: Math.random() };
@@ -64,9 +75,9 @@ Deno.serve(async (req) => {
     const ranked = teams.map((t: any) => ({ t, s: scores[t.id] })).sort((a: any, b: any) => b.s.score - a.s.score);
     const r0 = out.results;
     const lines = [
-      `Ether ${out.totals.ether.toFixed(2)}. Concentration ${Math.round(out.totals.concentration)} t (+${Math.round(out.totals.emitted)} t). City hauntings $${Math.round(out.totals.hauntings).toLocaleString()}. Containment ${(100 * out.totals.contained / out.totals.baseTons).toFixed(0)}% of ghosts.`,
+      `Ether ${out.totals.ether.toFixed(2)}. Concentration ${Math.round(out.totals.concentration)} t (+${Math.round(out.totals.emitted)} t). City slime damage $${Math.round(out.totals.slimeDamage).toLocaleString()}. Containment ${(100 * out.totals.contained / out.totals.baseTons).toFixed(0)}% of ghosts.`,
       `Leader: ${ranked[0].t.name}. Last: ${ranked[ranked.length - 1].t.name}. Most ghosts: ${[...r0].sort((a, b) => b.ghosts - a.ghosts)[0] && teams.find((t: any) => t.id === [...r0].sort((a, b) => b.ghosts - a.ghosts)[0].teamId).name}. Highest containment share: ${[...r0].sort((a, b) => (b.contained / b.baseTons) - (a.contained / a.baseTons))[0] && teams.find((t: any) => t.id === [...r0].sort((a, b) => (b.contained / b.baseTons) - (a.contained / a.baseTons))[0].teamId).name}.`,
-      `Firms: ${r0.reduce((s, r) => s + r.firms.filter(f => f.a === 0).length, 0)} of ${r0.reduce((s, r) => s + r.firms.length, 0)} chose zero containment. ${r0.reduce((s, r) => s + r.firms.filter(f => (f as any).defaulted).length, 0)} firm decisions defaulted. ${teams.filter((t: any) => t.bDefaulted).length} borough decisions defaulted.`,
+      `Businesses: ${r0.reduce((s, r) => s + r.firms.filter(f => f.a === 0).length, 0)} of ${r0.reduce((s, r) => s + r.firms.length, 0)} chose zero containment. ${r0.reduce((s, r) => s + r.firms.filter(f => (f as any).defaulted).length, 0)} business decisions defaulted. ${teams.filter((t: any) => t.bDefaulted).length} borough decisions defaulted.`,
       out.totals.breach ? `The Breach happened this round. Exposure up ${((P.events.breachDamageMult - 1) * 100).toFixed(0)}% everywhere.` : "",
       events.costShock ? `Cost shock applied: containment costs x${events.costShock.mult}.` : "",
       events.damageRevision ? `Damage revision applied to ${events.damageRevision.teamIds?.length ?? 0} boroughs.` : "",

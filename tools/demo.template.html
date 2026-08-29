@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghost Emissions — demo</title>
+<meta name="description" content="A semester-long climate economics game for an undergraduate class. This page runs the whole thing against nine bot boroughs, twelve rounds, no login.">
+<meta property="og:title" content="Ghost Emissions — a climate economics game">
+<meta property="og:description" content="Twelve weeks of emissions, damages, policy tools and a treaty vote, played by teams of students. This page runs the whole arc against bots in about a minute.">
+<meta property="og:type" content="website">
+<style>
+:root{--fog:#EEF0F3;--paper:#fff;--ink:#1B2233;--ink2:#5A6272;--line:#D8DCE2;--ecto:#6CC24A;--ecto-deep:#3F8A29;--ecto-soft:#E6F5DF;--ember:#E0713C;--haunt:#6E5A9E;--ok:#3F8F5A;--body:system-ui,-apple-system,'Helvetica Neue',sans-serif;--mono:ui-monospace,'SF Mono',Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fog);color:var(--ink);font:15px/1.5 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding:20px}
+h1{font-size:22px;margin:0 0 2px}
+h2{font-size:16px;margin:0 0 10px}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin:0 0 8px}
+.small{font-size:13px;color:var(--ink2)}
+.bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.bar .grp{display:flex;flex-direction:column;gap:4px}
+label.lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+select,input[type=number]{font:14px var(--body);padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+button{font:600 14px var(--body);padding:8px 14px;border:0;border-radius:6px;background:var(--ink);color:#fff;cursor:pointer}
+button.ghost{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.4;cursor:default}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi .num{font:600 24px var(--mono);line-height:1.1}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin-bottom:2px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);padding:4px 6px;border-bottom:1px solid var(--line)}
+td{padding:4px 6px;border-bottom:1px solid var(--fog)}
+td.n{text-align:right;font-family:var(--mono)}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:10px;background:var(--fog);color:var(--ink2)}
+.tag.on{background:var(--ecto-soft);color:var(--ecto-deep)}
+pre.sum{white-space:pre-wrap;font:13px/1.55 var(--body);background:var(--fog);border-radius:8px;padding:10px 12px;margin:0}
+.warn{background:#FBE7DD;border:1px solid #E0713C;color:#8A3D18;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:14px}
+details.intro{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0 14px}
+details.intro summary{cursor:pointer;font-weight:600;font-size:14px}
+.introbody{padding-top:8px;max-width:72ch}
+.introbody p{margin:0 0 10px}
+.arc{display:flex;gap:5px;flex-wrap:wrap}
+.arc span{font-size:12px;padding:4px 8px;border-radius:6px;background:var(--fog);color:var(--ink2);white-space:nowrap}
+.arc span.done{background:var(--ecto-soft);color:var(--ecto-deep)}
+.arc span.now{background:var(--ink);color:#fff}
+footer{margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
+footer a{color:var(--ink)}
+@media(max-width:900px){.cols{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ghost Emissions — demo</h1>
+  <p class="small">A semester-long climate economics game for an undergraduate class. This page runs the real model against nine bot boroughs. No login, no database, nothing written anywhere. Reload to start over.</p>
+
+  <details class="intro">
+    <summary>What you are looking at</summary>
+    <div class="introbody">
+      <p>Students are split into nine boroughs of one city. Each student runs one business inside their borough, and every borough shares the same sky. Making things releases ghosts, ghosts accumulate, the Ether rises, and slime damage gets worse for everyone. Ghosts stand in for greenhouse gases, the Ether for global temperature, slime damage for climate damages.</p>
+      <p>Two decisions a week, both due Sunday night. Each student sets output and containment for their own business. A rotating mayor sets one policy for the borough, which binds that borough's businesses the following week. Results resolve Monday and get projected in class. Twelve scored rounds plus a practice week, one per teaching week.</p>
+      <p>Underneath is a stock pollutant with linear marginal abatement costs, quadratic damages and concave business revenue. A price of $200 a ton is the city optimum, calibrated so that the price and the marginal damage are a fixed point rather than an assumption. The rounds add one lever at a time: a discount rate, a damage revision, a vote on the price, tax against cap against standard, a cost shock, revenue recycling, R&amp;D, adaptation and a tipping point, geoengineering, and a treaty settled by an in-class vote.</p>
+      <p>Rank is never graded. Credit comes from submitting, capped so that two missed weeks cost nothing.</p>
+      <p class="small">Run the rounds below with the buttons. Take a borough yourself to try a tool against the bots. Nothing here touches the live class: real play needs accounts and a class code.</p>
+    </div>
+  </details>
+
+  <div class="bar">
+    <div class="grp">
+      <label class="lab">How the boroughs behave</label>
+      <select id="mode">
+        <option value="freeride">Everyone free-rides</option>
+        <option value="coop">Everyone prices ghosts at $200</option>
+        <option value="realistic" selected>Realistic: each borough prices its own damage</option>
+        <option value="drift">Slow start, cooperation builds late</option>
+      </select>
+    </div>
+    <div class="grp">
+      <label class="lab">You run</label>
+      <select id="mine"><option value="">Nobody, just watch</option></select>
+    </div>
+    <div class="grp" id="mypolwrap" style="display:none">
+      <label class="lab">Your tool</label>
+      <select id="mypol">
+        <option value="none">No policy</option>
+        <option value="tax">Ghost tax</option>
+        <option value="cap">Cap and trade</option>
+        <option value="standard">Containment rule</option>
+      </select>
+    </div>
+    <div class="grp" id="mylvlwrap" style="display:none">
+      <label class="lab" id="mylvllab">Level</label>
+      <input type="number" id="mylvl" value="200" step="10" style="width:90px">
+    </div>
+    <div class="grp">
+      <label class="lab">Events</label>
+      <select id="events">
+        <option value="on" selected>Fire as scheduled</option>
+        <option value="off">Skip all events</option>
+        <option value="breach">Force the Breach in round 10</option>
+      </select>
+    </div>
+    <button id="step">Run the next round</button>
+    <button id="all" class="ghost">Run to round 12</button>
+    <button id="reset" class="ghost">Reset</button>
+  </div>
+
+  <div id="note" class="warn" style="display:none"></div>
+
+  <div class="strip">
+    <div class="kpi"><div class="eyebrow">Round</div><div class="num" id="k-round">—</div><div class="small" id="k-title">not started</div></div>
+    <div class="kpi"><div class="eyebrow">The Ether</div><div class="num" id="k-ether" style="color:var(--ecto-deep)">—</div><div class="small">of 4.0 · danger line 2.0</div></div>
+    <div class="kpi"><div class="eyebrow">City slime damage</div><div class="num" id="k-slime" style="color:var(--haunt)">—</div><div class="small">this round</div></div>
+    <div class="kpi"><div class="eyebrow">Containment</div><div class="num" id="k-cont">—</div><div class="small">of ghosts, city-wide</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px">
+    <h3>The twelve rounds</h3>
+    <div class="arc" id="arc"></div>
+    <p class="small" id="brief" style="margin:10px 0 0;max-width:80ch"></p>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px">
+    <h3>The Ether, round by round</h3>
+    <div id="chart"></div>
+    <p class="small" style="margin:6px 0 0">Green: what the boroughs did. Dashed: if every borough priced ghosts at $200 from the start.</p>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h3>Boroughs</h3>
+      <table id="tbl"><tbody></tbody></table>
+    </div>
+    <div>
+      <div class="panel" style="margin-bottom:14px">
+        <h3>From the Institute</h3>
+        <pre class="sum" id="summary">Run a round to see the Monday summary.</pre>
+      </div>
+      <div class="panel">
+        <h3>Businesses this round</h3>
+        <table id="firms"><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p class="small">Built by Casey Wichman for ECON 4210 at Georgia Tech. Source and setup instructions at
+    <a href="https://github.com/cjwichman/ghost-emissions">github.com/cjwichman/ghost-emissions</a>, MIT licensed.
+    Running it for your own class takes a Supabase project, two edge functions and a seed command. See <code>SETUP.md</code>.</p>
+  </footer>
+</div>
+
+<script>
+/* MODEL */
+/* ROUNDS */
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const money = v => (v < 0 ? "-$" : "$") + Math.round(Math.abs(v)).toLocaleString();
+const kilo = v => "$" + Math.round(v / 1000).toLocaleString() + "k";
+
+// ---------- world ----------
+const TRADES = { 1: "Bakery", 2: "Laundry", 3: "Brewery", 4: "Freight depot", 5: "Foundry" };
+const teams = DEFAULT_BOROUGHS.map((b, i) => ({
+  id: b.key, name: b.name, params: b,
+  discountRate: 0.03,
+  firms: [1, 2, 3, 4, 5].map((t, j) => ({ studentId: b.key + "-" + j, type: t })),
+}));
+
+let state, history, lastPolicy, round;
+
+function reset() {
+  state = { concentration: 0, teams: {} };
+  history = [];
+  lastPolicy = Object.fromEntries(teams.map(t => [t.id, { kind: "none" }]));
+  round = 0;
+  render(null);
+}
+
+// ---------- borough behaviour ----------
+// Each borough's own marginal damage per ton, which is what a self-interested
+// mayor would price if it ignored every other borough. Well below $200, which is
+// the whole point of the game.
+function ownPrice(t) {
+  const P = DEFAULT_PARAMS;
+  const T = etherFromConcentration(state.concentration ?? 0, P);
+  const st = state.teams?.[t.id] ?? {};
+  const exposure = t.params.exposure * (st.exposureMult ?? 1);
+  // Damage from a ton persists, so value it over a full twelve rounds rather
+  // than only the rounds left in the game. A shrinking horizon would make every
+  // borough care less as the semester ran on, which is an artefact of the
+  // twelve-round cutoff and not something to put in front of a class.
+  return 2 * exposure * t.params.income * T * P.world.etherPerTon * 12;
+}
+
+function priceFor(t, mode) {
+  if (mode === "freeride") return 0;
+  if (mode === "coop") return 200;
+  if (mode === "realistic") return Math.min(200, ownPrice(t));
+  if (mode === "drift") return Math.min(200, ownPrice(t) * (1 + round * 0.35));
+  return 0;
+}
+
+function botDecision(t, mode) {
+  const p = priceFor(t, mode);
+  const policy = p < 5 ? { kind: "none" } : { kind: "tax", tau: Math.round(p / 5) * 5 };
+  const budget = p > 100 ? { subsidy: 0.2, rd: 0.3, defense: 0.3, reserve: 0.2 }
+                         : { subsidy: 0, rd: 0.1, defense: 0.4, reserve: 0.5 };
+  return { policy, budget };
+}
+
+// Businesses best-respond to the price that actually binds them, which is last
+// round's policy, with a little noise so the table does not look mechanical.
+function firmDecisions(t) {
+  const P = DEFAULT_PARAMS;
+  const pol = lastPolicy[t.id] ?? { kind: "none" };
+  const price = pol.kind === "tax" ? (pol.tau ?? 0) : pol.kind === "cap" ? 150 : 0;
+  const tm = t.params.techMult ?? 1, gm = t.params.ghostMult ?? 1;
+  return t.firms.map((f, i) => {
+    const jitter = 0.85 + 0.3 * (((i * 37 + round * 11) % 100) / 100);
+    let a = firmBestA(f.type, price, tm, P) * jitter;
+    let q = firmBestQ(f.type, price, tm, gm, P) * (0.9 + 0.2 * (((i * 53 + round * 7) % 100) / 100));
+    if (pol.kind === "standard") a = Math.max(a, pol.aMin ?? 0);
+    return { q: Math.max(0, Math.min(100, Math.round(q))), a: Math.max(0, Math.min(1, a)) };
+  });
+}
+
+// ---------- one round ----------
+function step() {
+  if (round >= 12) return;
+  round += 1;
+  const mode = $("#mode").value;
+  const mineId = $("#mine").value;
+
+  const cfg = ROUNDS.find(r => r.number === round)?.config ?? {};
+  const evMode = $("#events").value;
+  let events = evMode === "off" ? {} : { ...(cfg.events ?? {}) };
+  if (events.damageRevision && !(events.damageRevision.teamIds || []).length) {
+    events.damageRevision = { ...events.damageRevision, teamIds: ["marshend", "harborline"] };
+  }
+  if (events.breach) events.breach = { roll: evMode === "breach" ? 0 : Math.random() };
+
+  const ts = teams.map(t => {
+    const bot = botDecision(t, mode);
+    let bDecision = bot;
+    if (t.id === mineId) {
+      const kind = $("#mypol").value, lvl = Number($("#mylvl").value);
+      const policy = kind === "tax" ? { kind: "tax", tau: lvl }
+                   : kind === "cap" ? { kind: "cap", capTons: lvl }
+                   : kind === "standard" ? { kind: "standard", aMin: Math.min(1, lvl / 100) }
+                   : { kind: "none" };
+      bDecision = { policy, budget: bot.budget };
+    }
+    // the lag: businesses face last round's policy, the budget applies now
+    return { ...t, decisions: firmDecisions(t), bDecision: { policy: lastPolicy[t.id], budget: bDecision.budget }, _set: bDecision.policy };
+  });
+
+  if (cfg.mechanic === "dimmer") {
+    const funders = ts.filter(t => (t._set?.kind ?? "none") !== "none").length;
+    if (funders >= 4) events.dimmer = { offset: -0.3, funders };
+  }
+  if (cfg.mechanic === "accord") {
+    for (const t of ts) if (priceFor(t, mode) > 40 || t.id === mineId) t.bDecision = { ...t.bDecision, policy: { kind: "tax", tau: 200 } };
+  }
+
+  const out = resolveRound(state, ts, events, DEFAULT_PARAMS);
+  state = out.nextState;
+  for (const t of ts) lastPolicy[t.id] = t._set;
+  history.push({ round, title: ROUNDS.find(r => r.number === round)?.title ?? "", out, ts, events });
+  render(history[history.length - 1]);
+}
+
+// ---------- rendering ----------
+function coopPath() {
+  const e = cooperativeEmissions(teams, 200, DEFAULT_PARAMS);
+  return Array.from({ length: 13 }, (_, i) => etherFromConcentration(e * i, DEFAULT_PARAMS));
+}
+
+function chart() {
+  const W = 700, H = 220, x0 = 44, y0 = 186, xw = 636, yh = 160;
+  const X = n => x0 + xw * (n / 12), Y = v => y0 - yh * Math.min(1, v / 4);
+  const actual = [etherFromConcentration(0, DEFAULT_PARAMS), ...history.map(h => h.out.totals.ether)];
+  const coop = coopPath();
+  const path = arr => arr.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" ");
+  const grid = [0, 1, 2, 3, 4].map(v =>
+    `<line x1="${x0}" x2="${x0 + xw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 2 ? "#E0713C" : "#D8DCE2"}" stroke-dasharray="${v === 2 ? "4 3" : "0"}"/>` +
+    `<text x="${x0 - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#5A6272">${v.toFixed(1)}</text>`).join("");
+  const ticks = Array.from({ length: 13 }, (_, i) => `<text x="${X(i)}" y="${y0 + 16}" text-anchor="middle" font-size="10" fill="#5A6272">${i}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${ticks}
+    <path d="${path(coop)}" fill="none" stroke="#5A6272" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path d="${path(actual)}" fill="none" stroke="#3F8A29" stroke-width="2.5"/>
+    <text x="${x0 + xw}" y="${Y(coop[12]) - 6}" text-anchor="end" font-size="11" fill="#5A6272">cooperative</text>
+    <text x="${W - 6}" y="${y0 + 16}" text-anchor="end" font-size="10" fill="#5A6272">round</text></svg>`;
+}
+
+function arc() {
+  $("#arc").innerHTML = ROUNDS.filter(r => r.number > 0).map(r =>
+    `<span class="${r.number === round ? "now" : r.number < round ? "done" : ""}">${r.number}. ${r.title}</span>`).join("");
+  const cur = ROUNDS.find(r => r.number === round);
+  $("#brief").textContent = round > 0 && cur ? (cur.config.briefing?.student ?? "")
+    : "Round 0 is a practice week. Nothing counts. Run the first round to begin.";
+}
+
+function render(h) {
+  arc();
+  $("#chart").innerHTML = chart();
+  $("#step").disabled = round >= 12;
+  $("#all").disabled = round >= 12;
+  if (!h) {
+    $("#k-round").textContent = "—"; $("#k-title").textContent = "not started";
+    $("#k-ether").textContent = "0.50"; $("#k-slime").textContent = "—"; $("#k-cont").textContent = "—";
+    $("#tbl").querySelector("tbody").innerHTML = "";
+    $("#firms").querySelector("tbody").innerHTML = "";
+    $("#summary").textContent = "Run a round to see the Monday summary.";
+    $("#note").style.display = "none";
+    return;
+  }
+  const T = h.out.totals;
+  $("#k-round").textContent = h.round;
+  $("#k-title").textContent = h.title;
+  $("#k-ether").textContent = T.ether.toFixed(2);
+  $("#k-slime").textContent = kilo(T.slimeDamage);
+  $("#k-cont").textContent = (100 * T.contained / Math.max(1, T.baseTons)).toFixed(0) + "%";
+
+  const notes = [];
+  if (T.breach) notes.push("The Breach happened this round. Exposure is up 50% everywhere, permanently.");
+  if (h.events.dimmer) notes.push(h.events.dimmer.funders + " boroughs funded the Dimmer. The Ether is held down this round and the effect halves each round after.");
+  if (h.events.costShock) notes.push("Cost shock: every containment cost rose 30% after decisions closed.");
+  if (h.events.damageRevision) notes.push("The Institute revised damages upward for Marsh End and Harborline.");
+  $("#note").style.display = notes.length ? "" : "none";
+  $("#note").textContent = notes.join(" ");
+
+  // scores so far
+  const scores = {};
+  for (const t of teams) {
+    const ws = history.map(x => x.out.results.find(r => r.teamId === t.id)?.welfare ?? 0);
+    scores[t.id] = discountedScore(ws, t.discountRate, DEFAULT_PARAMS);
+  }
+  const rows = h.out.results.map(r => {
+    const t = teams.find(x => x.id === r.teamId);
+    const set = h.ts.find(x => x.id === r.teamId)._set ?? { kind: "none" };
+    const setLabel = set.kind === "tax" ? "$" + Math.round(set.tau) + "/t tax"
+                   : set.kind === "cap" ? "cap " + Math.round(set.capTons) + " t"
+                   : set.kind === "standard" ? Math.round((set.aMin ?? 0) * 100) + "% rule" : "none";
+    return { t, r, setLabel, score: scores[r.teamId] };
+  }).sort((a, b) => b.score - a.score);
+  $("#tbl").querySelector("tbody").innerHTML =
+    `<tr><th>Borough</th><th>Set for next week</th><th style="text-align:right">Ghosts</th><th style="text-align:right">Contained</th><th style="text-align:right">Slime damage</th><th style="text-align:right">Score</th></tr>` +
+    rows.map(x => `<tr><td>${x.t.name}${x.t.id === $("#mine").value ? ' <span class="tag on">you</span>' : ""}</td>
+      <td><span class="tag">${x.setLabel}</span></td>
+      <td class="n">${x.r.ghosts.toFixed(0)} t</td>
+      <td class="n">${(100 * x.r.contained / Math.max(1, x.r.baseTons)).toFixed(0)}%</td>
+      <td class="n">${kilo(x.r.slimeDamage)}</td>
+      <td class="n">${kilo(x.score)}</td></tr>`).join("");
+
+  // one borough's five businesses, so the mission side is visible too
+  const focusId = $("#mine").value || rows[0].t.id;
+  const fr = h.out.results.find(r => r.teamId === focusId);
+  const ft = teams.find(t => t.id === focusId);
+  $("#firms").querySelector("tbody").innerHTML =
+    `<tr><th>${ft.name}</th><th style="text-align:right">Output</th><th style="text-align:right">Contained</th><th style="text-align:right">Ghosts</th><th style="text-align:right">Profit</th></tr>` +
+    fr.firms.map(f => `<tr><td>${TRADES[f.type]}</td><td class="n">${f.q.toFixed(0)}</td><td class="n">${(100 * f.a).toFixed(0)}%</td>
+      <td class="n">${f.ghosts.toFixed(1)} t</td><td class="n">${money(f.profit)}</td></tr>`).join("");
+
+  const zero = h.out.results.reduce((s, r) => s + r.firms.filter(f => f.a === 0).length, 0);
+  const total = h.out.results.reduce((s, r) => s + r.firms.length, 0);
+  $("#summary").textContent =
+    `Ether ${T.ether.toFixed(2)}. Concentration ${Math.round(T.concentration)} t (+${Math.round(T.emitted)} t). ` +
+    `City slime damage ${money(T.slimeDamage)}. Containment ${(100 * T.contained / T.baseTons).toFixed(0)}% of ghosts.\n\n` +
+    `Leader: ${rows[0].t.name}. Last: ${rows[rows.length - 1].t.name}.\n\n` +
+    `Businesses: ${zero} of ${total} chose zero containment.`;
+}
+
+// ---------- wiring ----------
+$("#mine").innerHTML = `<option value="">Nobody, just watch</option>` + teams.map(t => `<option value="${t.id}">${t.name}</option>`).join("");
+function syncMine() {
+  const on = !!$("#mine").value;
+  $("#mypolwrap").style.display = on ? "" : "none";
+  const kind = $("#mypol").value;
+  $("#mylvlwrap").style.display = on && kind !== "none" ? "" : "none";
+  $("#mylvllab").textContent = kind === "tax" ? "Tax per ton" : kind === "cap" ? "Cap, tons" : "Minimum %";
+  if (kind === "cap" && Number($("#mylvl").value) > 100) $("#mylvl").value = 60;
+  if (kind === "standard" && Number($("#mylvl").value) > 100) $("#mylvl").value = 40;
+}
+$("#mine").onchange = () => { syncMine(); if (history.length) render(history[history.length - 1]); };
+$("#mypol").onchange = syncMine;
+$("#step").onclick = step;
+$("#all").onclick = () => { while (round < 12) step(); };
+$("#reset").onclick = reset;
+$("#mode").onchange = reset;
+$("#events").onchange = reset;
+syncMine();
+reset();
+</script>
+</body>
+</html>

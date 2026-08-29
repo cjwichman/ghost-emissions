@@ -12,6 +12,8 @@ export const TRADES = {
   5: { trade: "Foundry", unit: "castings", blurb: "You run the borough's foundry. Ghosts pour off white-hot metal, and even industrial proton packs strain to keep up. Most expensive containment in the borough." },
 };
 
+// The canonical glossary. docs/world_and_calibration.md repeats this list, so
+// change both together. Rows appear in the order the game introduces them.
 export const KEY_ROWS = [
   ["Ghost emissions", "greenhouse gas emissions"],
   ["Ghost concentration", "the stock of GHGs in the atmosphere"],
@@ -20,6 +22,11 @@ export const KEY_ROWS = [
   ["Containment", "abatement"],
   ["Trap technology", "abatement technology"],
   ["The Institute", "your Monday briefing"],
+  ["The Inspector", "a regulator with authority but not much information"],
+  ["The Breach", "a tipping point"],
+  ["The Dimmer", "geoengineering"],
+  ["The Accord", "a treaty across boroughs"],
+  ["The Council", "the in-class vote on the Accord, a COP"],
 ];
 const mono = 'font-family="IBM Plex Mono" font-size="10" fill="#5A6272"';
 

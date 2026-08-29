@@ -1,6 +1,6 @@
-# Ghost Emissions — world sheet and calibration note (draft v1)
+# Ghost Emissions — world sheet and calibration note
 
-Two parts. Part A is the one-page world sheet students read in week 1. Part B is the calibration note for the class 6 example and the game model.
+Two parts. Part A is the one-page world sheet students read in week 1. Part B is the calibration note for the class 6 board example and the game model. Every number in Part B comes from `model/model.js`. Run `npm run calibrate` to regenerate the paths.
 
 ---
 
@@ -10,49 +10,54 @@ Two parts. Part A is the one-page world sheet students read in week 1. Part B is
 
 One city, nine boroughs, one sky. Businesses make things people want. Making things releases ghost emissions. Ghosts accumulate in the air as ghost concentration, which nobody owns and nobody can clean up. As concentration rises, the Ether rises, and slime damage gets worse everywhere. Slime damage costs money. Some boroughs are hit harder than others.
 
-Nobody wants to stop making things. Everyone would like fewer slime damage. That is the whole problem.
+Nobody wants to stop making things. Everyone would like less slime damage. That is the whole problem.
 
 ### Vocabulary
+
+This table is the canonical glossary. `web/js/ui.js` repeats it as `KEY_ROWS`, so change both together.
 
 | In the game | In the course |
 |---|---|
 | Ghost emissions | Greenhouse gas emissions |
-| Ghost concentration | Atmospheric CO2 (cumulative stock) |
+| Ghost concentration | The stock of GHGs in the atmosphere |
 | The Ether | Global temperature |
 | Slime damage | Climate damages |
-| Containment unit | One unit of abatement (one ton of ghosts kept out of the air) |
+| Containment | Abatement |
 | Trap technology | Abatement technology. Better traps mean cheaper containment |
 | The Institute | The weekly briefing you get every Monday |
 | The Inspector | A regulator with authority but not much information |
 | The Breach | A tipping point |
-| The Accord | A binding agreement across boroughs (a treaty) |
-| The Council | The city-wide vote on the Accord (a COP) |
+| The Dimmer | Geoengineering |
+| The Accord | A treaty across boroughs |
+| The Council | The in-class vote on the Accord, a COP |
 
 ### How a week works
 
-Monday: the Institute posts results and a briefing. During the week: every CEO runs their business (five minutes on your phone), and the borough mayor on duty sets your borough's policy after looking at what teammates' businesses did last week. Sunday night: everything closes. Policy set this week hits businesses next week.
+Monday: the Institute posts results and a briefing. During the week: every student runs their business, which takes about five minutes on a phone, and the mayor on duty sets the borough's decision after looking at what teammates' businesses did last week. Sunday night: everything closes. Policy set this week applies to businesses next week.
 
 ### Roles
 
-Each team is a borough. Each student is CEO of one business in that borough. Businesses differ in how much containment costs them. The mayor rotates each week and submits the borough's policy. Mayors are named on the leaderboard.
+Each team is a borough. Each student runs one business in that borough. Businesses differ in how much containment costs them. The mayor rotates each week and submits the borough's decision. Mayors are named on the leaderboard.
 
 ### Scores
 
-Boroughs: discounted borough welfare (business profits plus government revenue minus slime damage and spending). Businesses: cumulative profit. Everyone: forecast accuracy. Participation credit for submitting. Rank is for glory.
+Boroughs are ranked by discounted borough welfare: income plus business profits plus tax revenue, minus slime damage and minus what the borough spends. Each borough discounts at the rate it chose in round 3. Rank is for glory and is never graded. Credit comes from submitting.
 
-### Boroughs (draft names, archetype in parentheses)
+### Boroughs
 
-1. Harborline (rich waterfront, high exposure)
-2. The Stacks (industrial borough, high emissions, cheapest containment)
-3. Northgate (cold, resource-rich, low exposure, mild early gains)
-4. Lumen Heights (small rich tech district, best trap R&D)
-5. Old Exchange (rich downtown, low exposure, big financial businesses)
-6. Fenwick Island (small island borough, tiny emissions, high exposure)
-7. Coalbrook (fast-growing, high emissions, high exposure)
-8. Marsh End (poor outer borough, worst slime damage)
-9. Midtown Common (mid-income, average on everything)
+| Borough | Archetype |
+|---|---|
+| Harborline | Rich waterfront, high exposure |
+| The Stacks | Heavy industry, most ghosts, cheapest containment |
+| Northgate | Cold, resource-rich, low exposure |
+| Lumen Heights | Small rich tech district, best trap technology |
+| Old Exchange | Rich downtown finance, low exposure |
+| Fenwick Island | Small island, tiny emissions, badly exposed |
+| Coalbrook | Fast-growing, high emissions, high exposure |
+| Marsh End | Poor outer borough, worst slime damage |
+| Midtown Common | Average on everything, the median borough |
 
-Names are placeholders. Borough cards show every parameter. Nothing is hidden about a borough. Only other teams' current-week choices are hidden.
+Borough cards show every parameter. Nothing about a borough is hidden. Only other boroughs' current-week choices are hidden.
 
 ---
 
@@ -60,48 +65,68 @@ Names are placeholders. Borough cards show every parameter. Nothing is hidden ab
 
 ### Design goals
 
-- Linear MAC per business, linear aggregate MD in the class 6 board version, so every result is a triangle.
-- Optimal carbon tax = $200 per ton, matching Rennert et al. (2022) and the 2023 EPA SCC.
-- Five business types, identical across boroughs. Borough heterogeneity only in income, exposure, and baseline emissions.
-- Same numbers on the board and in the game.
+- Linear MAC per business, so every result on the board is a triangle.
+- An optimal price on ghosts of $200 per ton, matching Rennert et al. (2022) and the 2023 EPA SCC.
+- Five business types, identical across boroughs. Borough heterogeneity only in income, exposure, baseline emissions, and trap technology.
+- The same numbers on the board and in the game.
+- No corner solutions at the optimal price. Every business faces an interior choice on both margins.
 
 ### Businesses
 
-- Five types, `c = 1, 2, 3, 4, 5`. Each business has baseline emissions of 20 tons per round.
-- Marginal cost of containment for type `c` at abatement share `a`: `MAC = 200 * c * a` dollars per ton. Full containment costs `2000c` per round.
-- Under a tax `tau`, business abates until `MAC = tau`: `a = tau / (200c)`, capped at 1.
+Type `c` runs from 1 to 5. Output `q` is a slider from 0 to 100.
 
-At `tau = 200`: type 1 abates 100%, type 2 50%, type 3 33%, type 4 25%, type 5 20%. Aggregate abatement across five types = 45.7%. Reads well: cheap businesses go clean, expensive businesses mostly pay.
+- Revenue is `150q - 0.75q^2`. Marginal revenue is `150 - 1.5q`, which reaches zero at `q = 100`. With no price on ghosts a business makes as much as it can, earns $7,500, and releases 20 tons in a borough with a ghost multiplier of 1.
+- Emissions before containment are `0.2q` tons per round, scaled by the borough's ghost multiplier.
+- Marginal cost of containment is `MAC = 200 * c * m * a` dollars per ton, where `m` is the borough's trap multiplier and `a` is the containment share. Total containment cost is the area under that line.
+- Facing a price `p` per ton, a business contains until `MAC = p`, so `a* = p / (200cm)`, capped at 1. It then cuts output until marginal revenue equals marginal cost, so `q* = (150 - u) / 1.5`, where `u` is the per-unit containment cost plus the price paid on what is still released.
 
-- Business profit per round: `p*q - k*q - containment cost - policy cost - R&D`. Output `q` is a slider (0 to 100), `e = 0.2` tons per unit so `q = 100` gives 20 tons. Set `p - k = 30` so unabated profit is 3000 per round and paying a $200 tax on 20 tons (4000) is not survivable, forcing real decisions.
+At `p = 200`: type 1 contains 100%, type 2 50%, type 3 33%, type 4 25%, type 5 20%. Weighted across the city, containment is about 48% of ghosts. Output falls a further 15 to 25 percent depending on type. Cheap businesses go clean, expensive businesses mostly pay and shrink a little.
+
+The concave revenue term is what keeps the game honest. Under linear revenue a $200 price exceeds the gross margin on a ton, so types 2 through 5 earn negative profit at full output and shut down entirely. With `150q - 0.75q^2` every business stays profitable at the optimum and both margins stay interior, which is the point of the exercise.
 
 ### Boroughs
 
-- Nine boroughs, 5 businesses each in the base configuration, so 45 businesses and 900 tons per round unabated. If team sizes differ, borough emissions are scaled per business so a 4-person borough is not automatically low-emitting.
-- Borough card: income `Y`, exposure `d`, baseline emissions per business (default 20, higher for The Stacks and Coalbrook, lower for Fenwick Island and Marsh End), R&D bonus (Lumen Heights).
+Nine boroughs, five businesses each in the base configuration, so 45 businesses and 830 tons per round when nobody contains. Borough cards carry income `Y`, exposure `d`, a ghost multiplier, and a trap multiplier. A borough's budget each round is 20% of income.
 
 ### Damages, board version (class 6)
 
-- Flow model for the board: marginal damage per ton `MD = delta * E`, where `E` is global emissions this round.
-- Choose `delta` so that at the cooperative optimum `MD = 200`. Optimal global emissions with the tax at 200 are `900 * (1 - 0.457) = 489` tons, so `delta = 200 / 489 = 0.409`. Rounding for the board: `delta = 0.4`, optimum tax 196, close enough, or keep 0.409 and quote 200.
-- Board example 1 (aggregation): two businesses, `MAC_1 = 200a`, `MAC_2 = 400a`. Horizontal sum, then a tax of 200. Show who abates how much and the total cost.
-- Board example 2 (optimum): aggregate MAC for the 45 businesses against `MD = 0.4E`. Optimum, optimal tax, and the deadweight loss triangle if everyone free-rides at zero abatement.
+- Flow model for the board: marginal damage per ton is `MD = delta * E`, where `E` is city emissions this round.
+- Choose `delta` so that `MD = 200` at the cooperative optimum. Cooperative emissions are 346 tons per round, so `delta = 200 / 346 = 0.578`. Round to `0.58` for the board.
+- Board example 1 (aggregation): two businesses, `MAC_1 = 200a` and `MAC_2 = 400a`. Horizontal sum, then a price of $200. Show who contains how much and what it costs.
+- Board example 2 (optimum): aggregate MAC for the 45 businesses against `MD = 0.58E`. Find the optimum, the optimal price, and the deadweight loss triangle if everyone free-rides.
 
 ### Damages, game version
 
-- Stock model. Ghost concentration `S_t = S_{t-1} + E_t`. Ether `T_t = T_0 + k*S_t`.
-- Borough slime damage `D_it = d_i * T_t^2 * Y_i`.
-- Calibrate `k`, `d_i`, `Y_i`, and the horizon so that (a) the marginal damage of one ton along the cooperative path is about $200, (b) universal free-riding ends with the Ether at 3.0, (c) the cooperative path ends at 2.0. Done numerically in the model module. Students see the Ether on a 0 to 4 gauge with a marker at 2, and concentration as a secondary number.
+- Stock model. Ghost concentration is `S_t = S_{t-1} + E_t`. The Ether is `T_t = 0.5 + 0.000231 * S_t`.
+- Borough slime damage is `D_it = d_i * T_t^2 * Y_i * (1 - g_it)`, where `g` is the protection bought with slime defense.
+- Borough welfare is `Y + profits + tax revenue - subsidies paid - R&D - defense - slime damage`. Score is discounted cumulative welfare at the borough's own rate.
+- The sum of `d_i * Y_i` across boroughs is 51,015. The marginal damage of one ton emitted in round 6, summed undiscounted over the rest of the semester along the cooperative path, is $201. The price and the damage are a fixed point at $200, which is what makes $200 the right answer rather than an assumption.
 
-### Events (parameters to fix later)
+### The two paths
 
-- Damage revision (round 4): `d` doubles for two named boroughs.
-- Cost shock (round 7): all `c` multiplied by a draw in {0.7, 1.3}.
-- The Breach (round 10): probability of a permanent jump in `d` for all, rising with the Ether above 2.
-- Inspector (a mid-semester event): a randomly chosen borough's containment subsidy is voided for one round.
+| | Emissions per round | Ether at round 12 | Cumulative welfare |
+|---|---|---|---|
+| Everyone free-rides | 830 t | 2.80 | $6.70m |
+| Everyone prices ghosts at $200 | 346 t | 1.46 | $7.62m |
 
-### Checks before code
+Cooperation is worth about $0.92m over twelve rounds. The gap between the two Ether paths is the headline chart on the Monday dashboard.
 
-- Conbusiness the flow-vs-stock split is acceptable for teaching: board uses flow MD for tractability, game uses stock, both give a $200 optimum.
-- Conbusiness profit numbers make the business mission non-trivial for types 3–5.
-- Conbusiness the names.
+### Levers and events
+
+| Lever | Parameter | Effect |
+|---|---|---|
+| Trap R&D | `rdLearning` 0.6, floor 0.4 | The whole budget cuts containment cost 12% from next round on, permanently. Half the budget cuts it 6%. |
+| Slime defense | `defenseRate` 2.0, cap 0.4 | Half the budget cuts this round's slime damage 20%. The whole budget cuts it 40%, the maximum. |
+| Containment subsidy | cap $200 per ton | Paid per ton contained, funded from the budget. |
+| Damage revision (round 4) | `mult` 2 | Exposure doubles for two named boroughs, permanently. Set the two team ids in the round config. |
+| Cost shock (round 7) | `mult` 1.3 | All MACs rise 30% after decisions close. A tax lets ghosts rise, a cap lets the permit price rise. |
+| The Breach (round 10) | `P = min(0.8, 0.4(T - 2))` | If drawn, exposure rises 50% everywhere, permanently. |
+| The Dimmer (round 11) | offset -0.3 if four or more boroughs fund it | Lowers the Ether next round, then decays by half each round after. |
+| The Accord (round 12) | tax $200 | Members adopt a common price. Decided out loud in the Council. |
+| The Inspector | voids one borough's subsidy for one round | Implemented but not scheduled. Add `events.inspector.teamId` to any round config to fire it. |
+
+### Known limits
+
+- Output sits at the corner of 100 in rounds 0 through 5, because nothing prices ghosts yet. That is intended. Round 6 is the first week output moves.
+- `techFloor` of 0.4 binds only after sustained R&D, which no borough is likely to reach in twelve rounds.
+- Cap and tax are exactly equivalent in round 6 because costs are known. Round 7 is what separates them.

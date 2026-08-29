@@ -1,19 +1,31 @@
 import assert from 'node:assert/strict';
-import { DEFAULT_PARAMS as P, DEFAULT_BOROUGHS, firmOutcome, firmBestA, clearCap, boroughOutcome, resolveRound, discountedScore } from './model.js';
+import { DEFAULT_PARAMS as P, DEFAULT_BOROUGHS, firmOutcome, firmBestA, firmBestQ, clearCap, boroughOutcome, resolveRound, discountedScore } from './model.js';
 
-// firm: no policy, profit max at a=0
+// business: no policy, profit max at a = 0 and full output
 const f0 = firmOutcome({ q: 100, a: 0 }, { type: 3, techMult: 1, ghostMult: 1 }, { kind: 'none' });
-assert.equal(Math.round(f0.profit), 3000); assert.equal(f0.ghosts, 20);
+assert.equal(Math.round(f0.profit), 7500); assert.equal(f0.ghosts, 20);
+assert.equal(firmBestQ(3, 0, 1, 1), 100);
 const f5 = firmOutcome({ q: 100, a: 0.5 }, { type: 3, techMult: 1, ghostMult: 1 }, { kind: 'none' });
-assert.equal(Math.round(f5.profit), 3000 - 0.5 * 600 * 0.25 * 20); // 2250
+assert.equal(Math.round(f5.profit), 7500 - 0.5 * 600 * 0.25 * 20); // 6000
 
 // tax: best response a = tau/slope
 assert.equal(firmBestA(3, 120, 1), 0.2);
 const ft = firmOutcome({ q: 100, a: 0.2 }, { type: 3, techMult: 1, ghostMult: 1 }, { kind: 'tax', tau: 120 });
-assert.equal(Math.round(ft.taxBill), 1920); assert.equal(Math.round(ft.profit), 3000 - 1920 - 0.5 * 600 * 0.04 * 20);
-// tax: 20% beats 10% and 30% for type 3 at $120
+assert.equal(Math.round(ft.taxBill), 1920);
+// tax: 20% beats 10% and 30% for type 3 at $120, at any output level
 const pr = a => firmOutcome({ q: 100, a }, { type: 3, techMult: 1, ghostMult: 1 }, { kind: 'tax', tau: 120 }).profit;
 assert.ok(pr(0.2) > pr(0.1) && pr(0.2) > pr(0.3));
+
+// output responds to the price on ghosts: interior, falling, never a shutdown
+const qs = [0, 80, 120, 200, 300].map(p => firmBestQ(3, p, 1, 1));
+assert.equal(qs[0], 100);
+for (let i = 1; i < qs.length; i++) assert.ok(qs[i] < qs[i - 1] && qs[i] > 0);
+// and no business is pushed to negative profit at the $200 city optimum
+for (const c of [1, 2, 3, 4, 5]) for (const b of DEFAULT_BOROUGHS) {
+  const q = firmBestQ(c, 200, b.techMult, b.ghostMult);
+  const o = firmOutcome({ q, a: firmBestA(c, 200, b.techMult) }, { type: c, techMult: b.techMult, ghostMult: b.ghostMult }, { kind: 'tax', tau: 200 });
+  assert.ok(o.profit > 0, `type ${c} in ${b.name} makes ${o.profit}`);
+}
 
 // cap clears: 5 firms, cap 60 of 100 t -> price where aggregate abatement = 40 t
 const firms = [1, 2, 3, 4, 5].map(t => ({ type: t, techMult: 1, ghostMult: 1 }));
@@ -38,7 +50,7 @@ const b1 = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: 
 assert.ok(b1.techMultNext < 1);
 const b2 = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: { kind: 'none' }, budget: { defense: 0.5, reserve: 0.5 } }, 1.0);
 const b3 = boroughOutcome(team, fs, fs.map(() => ({ q: 100, a: 0 })), { policy: { kind: 'none' }, budget: { reserve: 1 } }, 1.0);
-assert.ok(b2.hauntings < b3.hauntings);
+assert.ok(b2.slimeDamage < b3.slimeDamage);
 
 // resolve: 9 teams free-riding, ether rises; events apply
 const teams = DEFAULT_BOROUGHS.map(b => ({ id: b.key, params: b, firms: fs, decisions: fs.map(() => ({ q: 100, a: 0 })), bDecision: { policy: { kind: 'none' }, budget: { reserve: 1 } } }));

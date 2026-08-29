@@ -1,5 +1,5 @@
 // Calibration report: free-riding vs cooperative paths, marginal damage of a ton.
-import { DEFAULT_PARAMS as P, DEFAULT_BOROUGHS, resolveRound, cooperativeEmissions, firmBestA, etherFromConcentration } from './model.js';
+import { DEFAULT_PARAMS as P, DEFAULT_BOROUGHS, resolveRound, cooperativeEmissions, firmBestA, firmBestQ, etherFromConcentration } from './model.js';
 
 const teams = DEFAULT_BOROUGHS.map((b, i) => ({
   id: b.key, params: b,
@@ -12,13 +12,13 @@ function run(label, mkDecisions) {
     const ts = teams.map(t => ({ ...t, ...mkDecisions(t) }));
     const out = resolveRound(state, ts);
     state = out.nextState;
-    rows.push({ r, ether: out.totals.ether.toFixed(2), emitted: Math.round(out.totals.emitted), haunt: Math.round(out.totals.hauntings), welfare: Math.round(out.totals.welfare) });
+    rows.push({ r, ether: out.totals.ether.toFixed(2), emitted: Math.round(out.totals.emitted), slime: Math.round(out.totals.slimeDamage), welfare: Math.round(out.totals.welfare) });
   }
   console.log(label); console.table(rows);
   return rows;
 }
 const free = run('Free-riding (a=0 everywhere)', t => ({ decisions: t.firms.map(() => ({ q: 100, a: 0 })), bDecision: { policy: { kind: 'none' }, budget: { reserve: 1 } } }));
-const coop = run('Cooperative ($200 tax everywhere)', t => ({ decisions: t.firms.map(f => ({ q: 100, a: firmBestA(f.type, 200, t.params.techMult) })), bDecision: { policy: { kind: 'tax', tau: 200 }, budget: { reserve: 1 } } }));
+const coop = run('Cooperative ($200 tax everywhere)', t => ({ decisions: t.firms.map(f => ({ q: firmBestQ(f.type, 200, t.params.techMult, t.params.ghostMult), a: firmBestA(f.type, 200, t.params.techMult) })), bDecision: { policy: { kind: 'tax', tau: 200 }, budget: { reserve: 1 } } }));
 // marginal damage of one ton emitted at round 6 along cooperative path (undiscounted remaining rounds)
 const A = DEFAULT_BOROUGHS.reduce((s, b) => s + b.exposure * b.income, 0);
 const coopE = cooperativeEmissions(teams, 200);

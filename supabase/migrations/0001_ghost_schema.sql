@@ -77,7 +77,7 @@ create table ghost.borough_decisions (
 -- ---------- outcomes ----------
 create table ghost.round_outcomes (
   round_id      uuid primary key references ghost.rounds(id) on delete cascade,
-  totals        jsonb not null,                -- emitted, concentration, ether, hauntings, ...
+  totals        jsonb not null,                -- emitted, concentration, ether, slimeDamage, ...
   state_after   jsonb not null,                -- world state carried to next round
   summary_md    text,                          -- deterministic instructor summary
   resolved_at   timestamptz default now()

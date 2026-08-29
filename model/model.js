@@ -10,9 +10,10 @@ export const DEFAULT_PARAMS = {
   firm: {
     ghostsPerUnit: 0.2,      // tons per unit of output
     maxOutput: 100,          // slider max
-    margin: 30,              // dollars per unit before ghosts
+    margin: 150,             // dollars per unit at the first unit, before ghosts
+    curve: 0.75,             // revenue = margin*q - curve*q^2, so marginal revenue falls
     macSlope: 200,           // MAC = macSlope * type * a * techMult, dollars per ton
-    types: [1, 2, 3, 4, 5],  // firm types, cycled through team members
+    types: [1, 2, 3, 4, 5],  // business types, cycled through team members
   },
   // Global
   world: {
@@ -28,7 +29,7 @@ export const DEFAULT_PARAMS = {
     rdLearning: 0.6,         // techMult_next = techMult * (1 - rdLearning * rdSpend / income)
     techFloor: 0.4,
     defenseRate: 2.0,        // protection g = min(defenseMax, defenseRate * spend / income)
-    defenseMax: 0.6,
+    defenseMax: 0.4,
     subsidyPerTonCap: 200,
   },
   // Events
@@ -40,18 +41,18 @@ export const DEFAULT_PARAMS = {
 };
 
 // Nine boroughs. Archetype in the description. income is dollars per round.
-// exposure d: slime damage = d * T^2 * income * (1 - g). Sum(d*income) ~ 41,000
+// exposure d: slime damage = d * T^2 * income * (1 - g). Sum(d*income) ~ 51,000
 // gives a marginal damage near $200 per ton along the cooperative path.
 export const DEFAULT_BOROUGHS = [
-  { key: 'harborline',  name: 'Harborline',     income: 55000, exposure: 0.16, ghostMult: 0.9, techMult: 1.0, blurb: 'Rich waterfront. Ghosts pour in off the harbor and flood basements. High exposure.' },
-  { key: 'stacks',      name: 'The Stacks',     income: 40000, exposure: 0.08, ghostMult: 1.3, techMult: 0.85, blurb: 'Heavy industry. Releases the most ghosts. Containment is cheapest here.' },
-  { key: 'northgate',   name: 'Northgate',      income: 45000, exposure: 0.05, ghostMult: 1.1, techMult: 1.0, blurb: 'Cold, resource-rich, low exposure. The Ether barely reaches this far north, for now.' },
-  { key: 'lumen',       name: 'Lumen Heights',  income: 60000, exposure: 0.09, ghostMult: 0.7, techMult: 0.8, blurb: 'Small, rich, tech-heavy. Builds the best ghost traps in the city.' },
-  { key: 'exchange',    name: 'Old Exchange',   income: 70000, exposure: 0.07, ghostMult: 0.8, techMult: 1.0, blurb: 'Downtown finance. Rich, low exposure, moderate ghosts.' },
-  { key: 'fenwick',     name: 'Fenwick Island', income: 25000, exposure: 0.22, ghostMult: 0.5, techMult: 1.0, blurb: 'Small island borough. Releases almost nothing, and drowns in slime damage when the Ether rises.' },
-  { key: 'coalbrook',   name: 'Coalbrook',      income: 40000, exposure: 0.15, ghostMult: 1.2, techMult: 1.0, blurb: 'Fast-growing and smoky. High emissions, high exposure.' },
-  { key: 'marshend',    name: 'Marsh End',      income: 22000, exposure: 0.25, ghostMult: 0.8, techMult: 1.1, blurb: 'Poor outer borough on the marsh. Slime damage hit hardest here.' },
-  { key: 'midtown',     name: 'Midtown Common', income: 42000, exposure: 0.10, ghostMult: 1.0, techMult: 1.0, blurb: 'Average on everything. The median borough.' },
+  { key: 'harborline',  name: 'Harborline',     income: 55000, exposure: 0.180, ghostMult: 0.9, techMult: 1.0, blurb: 'Rich waterfront. Ghosts pour in off the harbor and flood basements. High exposure.' },
+  { key: 'stacks',      name: 'The Stacks',     income: 40000, exposure: 0.090, ghostMult: 1.3, techMult: 0.85, blurb: 'Heavy industry. Releases the most ghosts. Containment is cheapest here.' },
+  { key: 'northgate',   name: 'Northgate',      income: 45000, exposure: 0.055, ghostMult: 1.1, techMult: 1.0, blurb: 'Cold, resource-rich, low exposure. The Ether barely reaches this far north, for now.' },
+  { key: 'lumen',       name: 'Lumen Heights',  income: 60000, exposure: 0.100, ghostMult: 0.7, techMult: 0.8, blurb: 'Small, rich, tech-heavy. Builds the best ghost traps in the city.' },
+  { key: 'exchange',    name: 'Old Exchange',   income: 70000, exposure: 0.078, ghostMult: 0.8, techMult: 1.0, blurb: 'Downtown finance. Rich, low exposure, moderate ghosts.' },
+  { key: 'fenwick',     name: 'Fenwick Island', income: 25000, exposure: 0.240, ghostMult: 0.5, techMult: 1.0, blurb: 'Small island borough. Releases almost nothing, and drowns in slime damage when the Ether rises.' },
+  { key: 'coalbrook',   name: 'Coalbrook',      income: 40000, exposure: 0.170, ghostMult: 1.2, techMult: 1.0, blurb: 'Fast-growing and smoky. Releases a lot of ghosts and is badly exposed.' },
+  { key: 'marshend',    name: 'Marsh End',      income: 22000, exposure: 0.280, ghostMult: 0.8, techMult: 1.1, blurb: 'Poor outer borough on the marsh. Slime damage hits hardest here.' },
+  { key: 'midtown',     name: 'Midtown Common', income: 42000, exposure: 0.110, ghostMult: 1.0, techMult: 1.0, blurb: 'Average on everything. The median borough.' },
 ];
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -65,10 +66,23 @@ export function firmMAC(type, a, techMult, P = DEFAULT_PARAMS) {
   return P.firm.macSlope * type * techMult * a;
 }
 
-// Cost-minimizing containment share for a firm facing a price per ton.
+// Cost-minimizing containment share for a business facing a price per ton.
 export function firmBestA(type, price, techMult, P = DEFAULT_PARAMS) {
   const slope = P.firm.macSlope * type * techMult;
   return slope > 0 ? clamp(price / slope, 0, 1) : 0;
+}
+
+// Profit-maximizing output for a business facing a price per ton, given that it
+// also picks the cost-minimizing containment share. Marginal revenue is
+// margin - 2*curve*q. Every unit of output carries containment cost plus the
+// price paid on whatever is still released, so output falls as the price rises.
+export function firmBestQ(type, price, techMult, ghostMult = 1, P = DEFAULT_PARAMS) {
+  const slope = P.firm.macSlope * type * techMult;
+  const a = firmBestA(type, price, techMult, P);
+  const perUnit = P.firm.ghostsPerUnit * ghostMult * (0.5 * slope * a * a + price * (1 - a));
+  const curve = P.firm.curve ?? 0;
+  if (curve <= 0) return perUnit < P.firm.margin ? P.firm.maxOutput : 0;
+  return clamp((P.firm.margin - perUnit) / (2 * curve), 0, P.firm.maxOutput);
 }
 
 /**
@@ -94,7 +108,7 @@ export function firmOutcome(decision, firm, policy, P = DEFAULT_PARAMS) {
   const ghosts = baseTons * (1 - a);
   const contained = baseTons * a;
   const contCost = 0.5 * slope * a * a * baseTons;      // integral of MAC over tons contained
-  const revenue = P.firm.margin * q;
+  const revenue = P.firm.margin * q - (P.firm.curve ?? 0) * q * q;
   let taxBill = 0, permitBill = 0, subsidyIn = subsidy * contained;
   if (kind === 'tax') taxBill = (policy.tau ?? 0) * ghosts;
   if (kind === 'cap') permitBill = (policy.permitPrice ?? 0) * (ghosts - (policy.allocation ?? 0));
@@ -156,14 +170,14 @@ export function boroughOutcome(team, firms, decisions, bDecision, ether, P = DEF
   const subsidyOut = firmResults.reduce((s, r) => s + r.subsidyIn, 0);
   const g = clamp(P.policy.defenseRate * spend('defense') / income, 0, P.policy.defenseMax);
   const exposure = card.exposure * (team.exposureMult ?? 1);
-  const hauntings = exposure * ether * ether * income * (1 - g);
+  const slimeDamage = exposure * ether * ether * income * (1 - g);
   const rd = spend('rd');
   const techMultNext = Math.max(P.policy.techFloor, techMult * (1 - P.policy.rdLearning * rd / income));
-  const welfare = income + profits + taxRevenue - subsidyOut - rd - spend('defense') - hauntings;
+  const welfare = income + profits + taxRevenue - subsidyOut - rd - spend('defense') - slimeDamage;
   return {
     firms: firmResults, ghosts, contained, baseTons: firmResults.reduce((s, r) => s + r.baseTons, 0),
     profits, taxRevenue, subsidyOut, subsidyPerTon, rdSpend: rd, defenseSpend: spend('defense'), protection: g,
-    hauntings, welfare, permitPrice: market?.price ?? null, techMultNext, policy,
+    slimeDamage, welfare, permitPrice: market?.price ?? null, techMultNext, policy,
   };
 }
 
@@ -210,7 +224,7 @@ export function resolveRound(state, teams, events = {}, P = DEFAULT_PARAMS) {
   });
   const totals = {
     emitted, concentration, ether, breach,
-    hauntings: results.reduce((s, r) => s + r.hauntings, 0),
+    slimeDamage: results.reduce((s, r) => s + r.slimeDamage, 0),
     contained: results.reduce((s, r) => s + r.contained, 0),
     baseTons: results.reduce((s, r) => s + r.baseTons, 0),
     welfare: results.reduce((s, r) => s + r.welfare, 0),
@@ -229,7 +243,8 @@ export function discountedScore(welfares, r, P = DEFAULT_PARAMS) {
 // when every firm faces `price`.
 export function cooperativeEmissions(teams, price, P = DEFAULT_PARAMS) {
   return teams.reduce((s, t) => s + t.firms.reduce((ss, f) => {
-    const base = P.firm.ghostsPerUnit * P.firm.maxOutput * (t.params.ghostMult ?? 1);
-    return ss + base * (1 - firmBestA(f.type, price, t.params.techMult ?? 1, P));
+    const gm = t.params.ghostMult ?? 1, tm = t.params.techMult ?? 1;
+    const q = firmBestQ(f.type, price, tm, gm, P);
+    return ss + P.firm.ghostsPerUnit * gm * q * (1 - firmBestA(f.type, price, tm, P));
   }, 0), 0);
 }

@@ -18,7 +18,7 @@
     SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=... \
       npm run seed -- --code ECON4210F26 --name "ECON 4210 Fall 2026" --instructor <your auth user id> --start 2026-08-31
 
-`--start` is the Monday of the practice week. Rounds open on Mondays and close Sundays 23:59. Add `--skip 2026-09-21,2026-11-09` (comma-separated Mondays) to leave exam weeks empty. Later rounds shift. Re-running the seed is safe and overwrites dates. Edit individual dates on the instructor page.
+`--start` is the Monday of the practice week. Rounds open on Mondays and close Sundays 23:59. Add `--skip 2026-09-21` (comma-separated Mondays) to leave exam weeks empty. Later rounds shift. Re-running the seed is safe and overwrites dates. Edit individual dates on the instructor page.
 
 ## 3. Front end
 1. Put your project URL and anon key in `web/js/config.js`.
@@ -29,12 +29,20 @@
 - Students create accounts with the class code. After add/drop, assign boroughs on the instructor page (Teams and students), then click Auto-assign to set business types and mayor order. Late adds: same sign-up, then assign.
 - Weekly: round closes Sunday night by date. Monday, open the instructor page, click Resolve, project the dashboard. Resolving opens the next round.
 - Events: round 4 needs two team ids in `events.damageRevision.teamIds` (edit the round config). Rounds 7, 10, 11, 12 are pre-wired.
-- Exports: participation CSV (one row per student per round: business submitted, was mayor, borough submitted) and outcome CSVs.
+- Exports: participation CSV (one row per student per round: business submitted, was mayor, borough submitted) and outcome CSVs. The CSV includes round 0, which is practice, so drop that row before grading.
+
+## Demo
+
+`web/demo.html` runs the whole game in one file: nine bot boroughs, twelve rounds, the real model, no login and no database. Use it to test a change, to rehearse a Monday, or to send a colleague the whole arc in a link. It is published with the rest of `web/`, so the address is `https://your.site/game/demo.html`. It also works opened straight from disk.
+
+Nothing links to it from the app, and the build drops the Monday teaching tips and worked examples from `content/rounds.json` before inlining, so only student-facing text is published. Rebuild it after any change to the model or the round content:
+
+    npm run build-demo
 
 ## Model changes
-Edit `model/model.js`, run `npm test`, then `npm run sync-model` and redeploy the two functions. The browser never receives the model.
+Edit `model/model.js`, run `npm test`, then `npm run sync-model` and redeploy the two functions. Run `npm run build-demo` as well so the demo stays in step. The student-facing app never receives the model.
 
 ## Resetting
-- Instructor page > Reset round N: deletes that round's decisions and outcomes (and any later rounds'), reopens it. Conbusiness by typing the round number.
-- Instructor page > Danger zone > Reset whole class: deletes all play data, round 0 back to open, others to draft. Requires typing the class code and two conbusinessations. Use after testing, before the term.
+- Instructor page > Reset round N: deletes that round's decisions and outcomes (and any later rounds'), reopens it. Confirm by typing the round number.
+- Instructor page > Danger zone > Reset whole class: deletes all play data, round 0 back to open, others to draft. Requires typing the class code and two confirmations. Use after testing, before the term.
 - Run `supabase/migrations/0002_reset_and_join.sql` once to add these functions and the sign-up code check.
