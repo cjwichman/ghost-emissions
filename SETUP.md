@@ -31,6 +31,12 @@
 - Events: round 4 needs two team ids in `events.damageRevision.teamIds` (edit the round config). Rounds 7, 10, 11, 12 are pre-wired.
 - Exports: participation CSV (one row per student per round: business submitted, was mayor, borough submitted) and outcome CSVs. The CSV includes round 0, which is practice, so drop that row before grading.
 
+## Students joining
+
+Signing up with the class code assigns a borough and a business type immediately (migration 0004): a borough drawn at random from those tied for fewest members, and the least-used business type in that borough. Students can play the open round the moment they register, with no action from the instructor.
+
+The instructor page still has auto-assign as a fallback for anyone left unplaced, and the per-student borough and type dropdowns still override anything assigned automatically. Neither reshuffles a student who already has a borough.
+
 ## Demo
 
 `web/demo.html` runs the whole game in one file: nine bot boroughs, twelve rounds, the real model, no login and no database. Use it to test a change, to rehearse a Monday, or to send a colleague the whole arc in a link. It is published with the rest of `web/`, so the address is `https://your.site/game/demo.html`. It also works opened straight from disk.
