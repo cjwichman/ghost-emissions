@@ -89,6 +89,16 @@ const SCALES = {
   ghosts: ["#E6F5DF", "#3F8A29", "Few", "Many ghosts", v => Math.round(v) + " t"],
   contain: ["#F0F0F0", "#1B2233", "0%", "100% contained", v => Math.round(v * 100) + "%"],
 };
+// Map labels sit on top of the polygon fill, which runs from very pale to very
+// dark, so a fixed text colour goes unreadable at one end of every scale. Pick
+// whichever of dark or white has more contrast against the fill, by WCAG
+// relative luminance rather than by eye.
+function relLum(hex) {
+  const chan = i => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * chan(1) + 0.7152 * chan(3) + 0.0722 * chan(5);
+}
+function contrast(a, b) { const hi = Math.max(a, b), lo = Math.min(a, b); return (hi + 0.05) / (lo + 0.05); }
+const LUM_INK = relLum("#1b2233"), LUM_WHITE = 1;
 function lerp(a, b, t) { const p = x => parseInt(x, 16), A = [1, 3, 5].map(i => p(a.slice(i, i + 2))), B = [1, 3, 5].map(i => p(b.slice(i, i + 2))); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * Math.min(1, Math.max(0, t))).toString(16).padStart(2, "0")).join(""); }
 export function drawMap(data, metric) {
   const [c0, c1, l0, l1, fmt] = SCALES[metric];
@@ -97,7 +107,19 @@ export function drawMap(data, metric) {
   for (const d of data) {
     const pts = SHAPES[d.key]; if (!pts) continue;
     const arr = pts.split(" ").map(p => p.split(",").map(Number)); const cx = arr.reduce((t, p) => t + p[0], 0) / arr.length, cy = arr.reduce((t, p) => t + p[1], 0) / arr.length;
-    s += `<polygon class="b" points="${pts}" fill="${lerp(c0, c1, d[metric] / max)}"><title>${d.name}: ${fmt(d[metric])}</title></polygon><text x="${cx}" y="${cy - 3}" text-anchor="middle">${d.name}</text><text class="v" x="${cx}" y="${cy + 10}" text-anchor="middle">${fmt(d[metric])}</text>`;
+    const fill = lerp(c0, c1, d[metric] / max), lum = relLum(fill);
+    const onDark = contrast(lum, LUM_WHITE) > contrast(lum, LUM_INK);
+    const ink = onDark ? "#fff" : "var(--ink)", ink2 = onDark ? "rgba(255,255,255,.85)" : "var(--ink2)";
+    // Each label is drawn twice: a stroked copy underneath as a halo, then the
+    // fill on top. A label wider than its borough spills onto a neighbour or
+    // onto the water, and the halo keeps it readable there. Doing it this way
+    // rather than with paint-order keeps it working in every renderer.
+    const halo = onDark ? "#1B2233" : "#fff";
+    const label = (y, cls, txt, colour) =>
+      `<text ${cls} x="${cx}" y="${y}" text-anchor="middle" style="fill:none;stroke:${halo};stroke-width:2.5px;stroke-linejoin:round">${txt}</text>` +
+      `<text ${cls} x="${cx}" y="${y}" text-anchor="middle" style="fill:${colour}">${txt}</text>`;
+    s += `<polygon class="b" points="${pts}" fill="${fill}"><title>${d.name}: ${fmt(d[metric])}</title></polygon>`
+       + label(cy - 3, "", d.name, ink) + label(cy + 10, 'class="v"', fmt(d[metric]), ink2);
   }
   return { svg: s + "</svg>", legend: `<span><i style="background:${c0}"></i>${l0}</span><span><i style="background:${c1}"></i>${l1}</span>` };
 }
