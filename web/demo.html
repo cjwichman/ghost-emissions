@@ -59,10 +59,10 @@ footer a{color:var(--ink)}
   <details class="intro">
     <summary>What you are looking at</summary>
     <div class="introbody">
-      <p>Students are split into nine boroughs of one city. Each student runs one business inside their borough, and every borough shares the same sky. Making things releases ghosts, ghosts accumulate, the Ether rises, and slime damage gets worse for everyone. Ghosts stand in for greenhouse gases, the Ether for global temperature, slime damage for climate damages.</p>
+      <p>Students are split into nine boroughs of one city. Each student runs one business inside their borough, and all nine boroughs sit under one atmosphere. Making things releases ghosts, the ghosts accumulate, the Ether rises, and slime damage costs every borough money. Ghosts stand in for greenhouse gases, the Ether for global temperature, slime damage for climate damages.</p>
       <p>Two decisions a week, both due Sunday night. Each student sets output and containment for their own business. A rotating mayor sets one policy for the borough, which binds that borough's businesses the following week. Results resolve Monday and get projected in class. Twelve scored rounds plus a practice week, one per teaching week.</p>
       <p>Underneath is a stock pollutant with linear marginal abatement costs, quadratic damages and concave business revenue. A price of $200 a ton is the city optimum, calibrated so that the price and the marginal damage are a fixed point rather than an assumption. The rounds add one lever at a time: a discount rate, a damage revision, a vote on the price, tax against cap against standard, a cost shock, revenue recycling, R&amp;D, adaptation and a tipping point, geoengineering, and a treaty settled by an in-class vote.</p>
-      <p>Rank is never graded. Credit comes from submitting, capped so that two missed weeks cost nothing.</p>
+      <p>Rank is never graded. Credit comes from submitting, capped so that two missed weeks cost a student nothing.</p>
       <p class="small">Run the rounds below with the buttons. Take a borough yourself to try a tool against the bots. Nothing here touches the live class: real play needs accounts and a class code.</p>
     </div>
   </details>
@@ -411,7 +411,7 @@ const ROUNDS = [
   "title": "Practice",
   "config": {
    "briefing": {
-    "student": "Welcome to the city. Nine boroughs share one sky, and the Institute reads the Ether every Monday. Businesses make things people want, and making things releases ghosts. The ghosts drift up, the concentration builds, and the Ether rises for everyone at once. Nothing you do this week counts for anything. Log in, find your business, move the sliders, and submit so we know you can. Real play starts next week."
+    "student": "Welcome to the city. Nine boroughs, one atmosphere, and an Institute that reads the Ether every Monday morning. Businesses make things. Making things releases ghosts, the ghosts accumulate, and the Ether rises for every borough at once. Nothing this week counts. Log in, find your business, move the sliders, submit. Scoring starts next week."
    },
    "borough": {
     "type": "target",
@@ -424,7 +424,7 @@ const ROUNDS = [
   "title": "Ghosts add up",
   "config": {
    "briefing": {
-    "student": "This is the first round that counts. Every business in the city decides how much to make and how many ghosts to contain, and nobody pays anything for what they release. The Institute expects the Ether to move on Monday, and expects most of you to release freely, because that is what the arithmetic rewards. Watch what your profit does when you contain. Then watch what the sky does when nobody does."
+    "student": "First scored round. Every business picks how much to make and how much to contain. Nothing charges you for the ghosts you release. Containing costs you money and earns you nothing back, so the Institute expects most businesses to release freely. The Ether reading moves on Monday."
    },
    "borough": {
     "type": "target",
@@ -437,7 +437,7 @@ const ROUNDS = [
   "title": "The price of a ghost",
   "config": {
    "briefing": {
-    "student": "The Institute has put a number on it: one more ton of ghosts costs the city about $200 in slime damage over the semester. Your borough page now shows that number as a line against your own cost of containment. Nothing binds yet. The question this week is what your borough would contain if it took the $200 seriously, and what it actually contains when nobody has to."
+    "student": "The Institute has finished its damage assessment. One more ton of ghosts costs the city about $200 in slime damage over the rest of the semester. Your borough page now draws that $200 against your own cost of containing. Nothing binds anyone yet. Set a target and see how close your businesses come."
    },
    "borough": {
     "type": "target",
@@ -450,7 +450,7 @@ const ROUNDS = [
   "title": "Patience",
   "config": {
    "briefing": {
-    "student": "A quiet week, by design. Mayors choose how much their borough cares about the future: a discount rate between 2% and 7%, locked for the rest of the game. It sounds like bookkeeping. It is closer to a personality. Patient boroughs will pay now to keep the Ether down later. Impatient ones will look sharp on the leaderboard for a while."
+    "student": "Quiet week. Mayors pick a discount rate between 2% and 7%, locked for the rest of the game. The rate decides how much your score counts slime damage in later rounds. A low rate makes future damage expensive to you now. A high rate makes it cheap now and expensive later."
    },
    "borough": {
     "type": "rate",
@@ -463,7 +463,7 @@ const ROUNDS = [
   "title": "The Institute revises",
   "config": {
    "briefing": {
-    "student": "The Institute has revised its damage estimates, and the news is bad for some of you. Two boroughs are more exposed than anyone believed, effective immediately. The ghosts already in the sky do not care that the estimate changed. Mayors now control a budget: trap subsidies, trap R&D, slime defense, or reserve. Spend it like the estimate might be revised again, because it might."
+    "student": "The Institute has revised its damage estimates. Two boroughs are more exposed than the earlier assessment showed, effective this round, no appeal. Ghosts already in the sky are unaffected by the revision. Mayors also control a budget from now on: trap subsidies, trap R&D, slime defense, or hold it in reserve."
    },
    "borough": {
     "type": "budget",
@@ -482,7 +482,7 @@ const ROUNDS = [
   "title": "The vote",
   "config": {
    "briefing": {
-    "student": "Every borough sees a different cost per ghost, because every borough has different income and different exposure. This week each borough reports its own number and votes on one price for the whole city. The median vote wins. Think about what that mechanism rewards, and whose slime damage it leaves out of the count."
+    "student": "Each borough faces a different cost per ghost, because income and exposure differ across the city. This week every borough reports its own number and votes on one price for all nine. The median vote wins. Boroughs above and below the median get a price they did not pick."
    },
    "borough": {
     "type": "vote",
@@ -495,7 +495,7 @@ const ROUNDS = [
   "title": "Pick a tool",
   "config": {
    "briefing": {
-    "student": "Policy gets teeth. Mayors pick a tool: a ghost tax, a cap with tradeable permits, or a flat containment rule. It applies to every business in the borough next week. The tools look interchangeable on paper this week, and this week the paper is right. Enjoy that while it lasts."
+    "student": "Mayors pick a tool: a ghost tax, a cap with tradeable permits, or a flat containment rule. Whatever you pick binds every business in your borough starting next week. Containment costs are known and steady right now, so all three tools reach the same outcome at the same stringency."
    },
    "borough": {
     "type": "instrument",
@@ -508,7 +508,7 @@ const ROUNDS = [
   "title": "Cost shock",
   "config": {
    "briefing": {
-    "student": "The Institute regrets to report that trap costs are not what anyone thought. Something will change after decisions close on Sunday, and taxes and caps will not respond the same way. A tax holds the price of a ghost fixed and lets the quantity slip. A cap holds the quantity and lets the price jump. Pick which mistake you would rather make."
+    "student": "The Institute regrets to report an error in its trap cost figures. Containment costs change after decisions close Sunday, and you choose before seeing the new ones. Under a tax the price per ton stays where you set it and emissions move. Under a cap emissions stay where you set them and the permit price moves. Keep your tool or switch it."
    },
    "borough": {
     "type": "instrument",
@@ -526,7 +526,7 @@ const ROUNDS = [
   "title": "Where does the money go?",
   "config": {
    "briefing": {
-    "student": "Ghost taxes are raising real money now, and money has to go somewhere. Mayors decide: hand it back to businesses as a subsidy per ton contained, spend it defending households from slime damage, bank it. Your businesses have opinions, and the note box exists for a reason. The tax is only half the policy. The other half is where the revenue lands."
+    "student": "Ghost taxes are collecting real revenue. Mayors decide where it goes: back to businesses as a subsidy per ton contained, into slime defense for households, or into reserve. A subsidy stacks on top of the tax and raises the return to containing. Your businesses can send you a suggestion through the note box."
    },
    "borough": {
     "type": "instrument+budget",
@@ -539,7 +539,7 @@ const ROUNDS = [
   "title": "Better traps",
   "config": {
    "briefing": {
-    "student": "Traps can get cheaper, but only if someone pays for the engineering. R&D spending this week lowers your borough's containment cost from next week onward, permanently. The borough that invests early contains cheaply for the rest of the game. The borough that waits keeps paying old prices. Patience, again, wearing a different coat."
+    "student": "Traps get cheaper if someone pays for the engineering. R&D spending this week lowers your borough's containment cost from next week on, and the reduction is permanent. The whole budget buys a 12% cut, half the budget buys 6%. A borough that spends late gets the same discount for fewer rounds."
    },
    "borough": {
     "type": "instrument+budget",
@@ -552,7 +552,7 @@ const ROUNDS = [
   "title": "Live with it, or fix it?",
   "config": {
    "briefing": {
-    "student": "Two decisions and one warning. The decisions: keep containing, or spend on slime defense that protects your borough now and does nothing for the sky. The warning: the Institute's instruments show the Breach becomes possible once the Ether passes 2.0, and its odds rise with every tenth of a point. If it opens, exposure jumps for everyone, permanently. The dice are loaded with your own ghosts."
+    "student": "Two decisions and one warning. Containment lowers the Ether for all nine boroughs. Slime defense lowers your own damage this round and leaves the Ether where it is. The warning: the Institute's instruments put the Breach in range above an Ether of 2.0, with the odds climbing every tenth of a point after that. If the Breach opens, exposure rises for every borough, permanently."
    },
    "borough": {
     "type": "instrument+budget",
@@ -568,7 +568,7 @@ const ROUNDS = [
   "title": "The Dimmer",
   "config": {
    "briefing": {
-    "student": "A device called the Dimmer is on offer. If at least four boroughs pay in, the Ether drops for everyone next round, no containment required. It is cheap, it works, and it fixes nothing underneath. The Institute notes two problems: every borough would rather the other boroughs pay, and a working Dimmer makes containment feel optional. Fund it or don't."
+    "student": "A device called the Dimmer is on offer. If four or more boroughs pay in, the Ether drops for all nine next round with no containment required, and the effect halves each round after that. Ghost concentration is unchanged. The Institute records two objections for the minutes: every borough would prefer the other boroughs funded it, and the concentration keeps building while the Dimmer runs."
    },
    "borough": {
     "type": "yesno",
@@ -582,7 +582,7 @@ const ROUNDS = [
   "title": "The Accord",
   "config": {
    "briefing": {
-    "student": "Last round. The Accord is on the table: members adopt a common $200 ghost tax, and goods from non-members pay a toll at the borough line. The vote happens in class, out loud, mayor by mayor. Then the final week resolves and the Institute shows you the whole semester at once: the Ether path you made, next to the one you could have made."
+    "student": "Last round. The Accord: members adopt a common $200 ghost tax, and goods crossing from non-members pay a toll at the borough line. The vote happens in class, out loud, mayor by mayor. Once the final week resolves the Institute posts the whole semester at once, your Ether path against the cooperative one."
    },
    "borough": {
     "type": "yesno",

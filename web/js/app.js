@@ -149,7 +149,7 @@ function viewRecovery() {
 
 // ---------- firm ----------
 async function viewFirm() {
-  if (!round) return shell("firm", `<div class="card"><h2>No round open</h2><p>The next round opens after Monday's class.</p></div>`);
+  if (!round) return shell("firm", `<div class="card"><h2>No round open</h2><p>The Institute posts the next round after Monday's class.</p></div>`);
   const cfg = round.config ?? {};
   const fcfg = cfg.firm ?? { sliders: ["q", "a"], chart: false };
   const { data: mine } = await sb.from("firm_decisions").select("*").eq("round_id", round.id).eq("student_id", me.id).maybeSingle();
@@ -186,10 +186,10 @@ async function viewFirm() {
       <div id="msg"></div></div>
     <label class="lab">Send a one-line note to your mayor for next week (optional)</label><input class="field" id="note" maxlength="140" value="${esc(mine?.note ?? "")}" ${closed ? "disabled" : ""}>
   </div><div>
-    ${fcfg.chart ? `<div class="chart"><div id="mac"></div><div class="cap">Your marginal cost of containment. ${policy.kind === "tax" ? "Where it crosses the tax line, one more ton contained costs the same as one more ton taxed." : ""}</div></div>` : ""}
+    ${fcfg.chart ? `<div class="chart"><div id="mac"></div><div class="cap">Your marginal cost of containment. ${policy.kind === "tax" ? "Where your cost line crosses the tax line, one more ton contained costs the same as one more ton taxed." : ""}</div></div>` : ""}
     ${cfg.briefing?.firm ? drawer("From the Institute", `<div class="brief">${cfg.briefing.firm.split("\n").map(p => `<p>${esc(p)}</p>`).join("")}</div>`, true) : ""}
     ${drawer("Forecast for next round", `<p>What will the Ether read next Monday?${etherReading ? ` The current reading is ${etherReading}.` : ""}</p><input class="field" id="fc" type="number" step="0.01" min="0" max="4" value="${mine?.forecast ?? ""}" ${closed ? "disabled" : ""} placeholder="e.g. 0.75">`)}
-    ${drawer("Your business", `<dl class="kv"><dt>Trade</dt><dd>${esc(T.blurb)}</dd><dt>Ghosts</dt><dd>Your business releases 0.2 t of ghosts per ${esc(T.unit.replace(/s$/, ""))} before containment.</dd><dt>Earnings</dt><dd>Demand falls as you make more. The first ${esc(T.unit.replace(/s$/, ""))} earns $150 and each one after that earns a little less, so at full output the last one earns nothing. Full output brings in $7,500 before containment and ghosts.</dd><dt>Containment</dt><dd>Cheap for the first few ghosts, expensive for the last few.</dd></dl>`, round.number <= 1)}
+    ${drawer("Your business", `<dl class="kv"><dt>Trade</dt><dd>${esc(T.blurb)}</dd><dt>Ghosts</dt><dd>Your business releases 0.2 t of ghosts per ${esc(T.unit.replace(/s$/, ""))} before containment.</dd><dt>Earnings</dt><dd>Demand falls as you make more. The first ${esc(T.unit.replace(/s$/, ""))} earns $150 and each one after that earns a little less, so at full output the last one earns nothing. Full output brings in $7,500 before containment and ghosts.</dd><dt>Containment</dt><dd>Cheap for the first few ghosts you contain, expensive for the last few.</dd></dl>`, round.number <= 1)}
     ${keyDrawer(policy.kind === "tax" ? [["Ghost tax", "carbon tax"]] : policy.kind === "cap" ? [["Cap", "cap and trade"]] : [])}
   </div></div>`);
 
@@ -223,7 +223,7 @@ async function viewFirm() {
   $("#submit")?.addEventListener("click", async () => {
     const row = { round_id: round.id, student_id: me.id, q: +$("#q").value, a: showA ? +$("#a").value / 100 : 0, note: $("#note").value || null, forecast: $("#fc").value === "" ? null : +$("#fc").value, extra: { ...(mine?.extra ?? {}), suggestion_only: false }, submitted_at: new Date().toISOString() };
     const { error } = await sb.from("firm_decisions").upsert(row);
-    $("#msg").innerHTML = `<div class="msg ${error ? "" : "ok"}">${error ? esc(error.message) : "Submitted. You can change it until Sunday night."}</div>`;
+    $("#msg").innerHTML = `<div class="msg ${error ? "" : "ok"}">${error ? esc(error.message) : "Submitted. You can change your decision until Sunday night."}</div>`;
     if (!error) $("#submit").textContent = `Update for round ${round.number}`;
   });
 }
@@ -258,7 +258,7 @@ async function viewBorough() {
 
   const decisionUI = {
     target: () => `<div class="slider"><div class="lab"><span>Borough containment target</span><span class="num" id="tv"></span></div><input type="range" id="target" min="0" max="100" value="${Math.round((payload.target ?? 0) * 100)}"></div><p class="small">The share of your borough's ghosts you are aiming to contain. A goal, not a rule: nothing forces your businesses to hit it. Policy tools with teeth arrive later in the semester.</p>`,
-    rate: () => `<div class="slider"><div class="lab"><span>Discount rate</span><span class="num" id="rv"></span></div><input type="range" id="rate" min="2" max="7" step="0.5" value="${payload.discountRate != null ? payload.discountRate * 100 : 3}"></div><p class="small">Locked for the rest of the semester once the round closes. A low rate values future slime damage almost as much as today's. A high rate counts future slime damage for less.</p>`,
+    rate: () => `<div class="slider"><div class="lab"><span>Discount rate</span><span class="num" id="rv"></span></div><input type="range" id="rate" min="2" max="7" step="0.5" value="${payload.discountRate != null ? payload.discountRate * 100 : 3}"></div><p class="small">Locked for the rest of the semester once the round closes. A low rate counts slime damage in later rounds at nearly its full size. A high rate shrinks it.</p>`,
     instrument: () => `<div class="seg" id="kind"><button data-k="tax" class="${payload.policy?.kind === "tax" ? "on" : ""}">Ghost tax</button><button data-k="cap" class="${payload.policy?.kind === "cap" ? "on" : ""}">Cap on ghosts</button><button data-k="standard" class="${payload.policy?.kind === "standard" ? "on" : ""}">Containment rule</button></div>
       <div id="tax" style="display:none"><div class="slider"><div class="lab"><span>Tax per ton</span><span class="num" id="tauv"></span></div><input type="range" id="tau" min="0" max="300" step="10" value="${payload.policy?.tau ?? 100}"></div></div>
       <div id="cap" style="display:none"><div class="slider"><div class="lab"><span>Cap, tons for the borough</span><span class="num" id="capv"></span></div><input type="range" id="capTons" min="0" max="${Math.round(teammates.length * 20 * (p.ghostMult ?? 1))}" step="1" value="${payload.policy?.capTons ?? Math.round(teammates.length * 20 * (p.ghostMult ?? 1) * 0.6)}"></div></div>
@@ -365,7 +365,7 @@ async function viewBoard() {
   if (!classId) return shell("board", `<div class="card"><h2>No class found</h2></div>`);
   const { data: rounds } = await sb.from("rounds").select("*").eq("class_id", classId).eq("status", "resolved").order("number");
   const { data: teamsAll } = await sb.from("teams").select("*").eq("class_id", classId).order("name");
-  if (!rounds?.length) return shell("board", `<div class="card"><h2>The city</h2><p>No rounds resolved yet. Come back after the first Monday.</p></div>`);
+  if (!rounds?.length) return shell("board", `<div class="card"><h2>The city</h2><p>The Institute has not filed a reading yet. Come back after the first Monday.</p></div>`);
   const last = rounds[rounds.length - 1];
   const { data: ros } = await sb.from("round_outcomes").select("*").in("round_id", rounds.map(r => r.id));
   const { data: bos } = await sb.from("borough_outcomes").select("*").eq("round_id", last.id);

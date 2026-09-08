@@ -8,9 +8,9 @@ Two parts. Part A is the one-page world sheet students read in week 1. Part B is
 
 ### The world
 
-One city, nine boroughs, one sky. Businesses make things people want. Making things releases ghost emissions. Ghosts accumulate in the air as ghost concentration, which nobody owns and nobody can clean up. As concentration rises, the Ether rises, and slime damage gets worse everywhere. Slime damage costs money. Some boroughs are hit harder than others.
+One city, nine boroughs, one atmosphere above all of them. Businesses make things. Making things releases ghost emissions, which accumulate in the air as ghost concentration. No borough owns the concentration and no borough can clear it. As concentration rises the Ether rises, and slime damage costs every borough money. Some boroughs are hit harder than others.
 
-Nobody wants to stop making things. Everyone would like less slime damage. That is the whole problem.
+Containing ghosts costs the business that contains them. The damage avoided lands on all nine boroughs. That gap is the problem the game is about.
 
 ### Vocabulary
 
@@ -33,7 +33,7 @@ This table is the canonical glossary. `web/js/ui.js` repeats it as `KEY_ROWS`, s
 
 ### How a week works
 
-Monday: the Institute posts results and a briefing. During the week: every student runs their business, which takes about five minutes on a phone, and the mayor on duty sets the borough's decision after looking at what teammates' businesses did last week. Sunday night: everything closes. Policy set this week applies to businesses next week.
+Monday: the Institute posts results and a briefing. During the week: every student runs their business, which takes about five minutes on a phone, and the mayor on duty sets the borough's decision after seeing what teammates' businesses did last week. Sunday night: everything closes. A policy set this week binds businesses next week.
 
 ### Roles
 
@@ -57,7 +57,7 @@ Boroughs are ranked by discounted borough welfare: income plus business profits 
 | Marsh End | Poor outer borough, worst slime damage |
 | Midtown Common | Average on everything, the median borough |
 
-Borough cards show every parameter. Nothing about a borough is hidden. Only other boroughs' current-week choices are hidden.
+Borough cards show every parameter, so nothing about a borough's situation is hidden. What the other boroughs chose this week is hidden until Monday.
 
 ---
 
