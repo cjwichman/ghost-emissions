@@ -99,7 +99,7 @@ async function route() {
 function viewAuth() {
   shell("signin", `<div class="auth card">
     <h2 style="display:flex;align-items:center;gap:8px">${GHOST_SVG(26)} Ghost Emissions</h2>
-    <p class="small">One city. Nine boroughs. Everyone shares the sky.</p>
+    <p class="small">One city. Nine boroughs. One atmosphere above all of them.</p>
     <div class="seg"><button class="on" data-m="in">Sign in</button><button data-m="up">Create account</button></div>
     <div id="up" style="display:none"><label class="lab">Class code</label><input class="field" id="code" placeholder="from your syllabus"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"></div>
     <label class="lab">Email</label><input class="field" id="email" type="email">

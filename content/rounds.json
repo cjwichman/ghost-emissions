@@ -47,7 +47,7 @@
    },
    "briefing": {
     "student": "First scored round. Every business picks how much to make and how much to contain. Nothing charges you for the ghosts you release. Containing costs you money and earns you nothing back, so the Institute expects most businesses to release freely. The Ether reading moves on Monday.",
-    "firm": "Your ghosts and everyone else's go into the same sky. Choose output and containment. Profit is yours. Slime damage is everyone's."
+    "firm": "Your ghosts and every other business's go into the same air. Choose output and containment. The profit is yours alone. The slime damage lands on all nine boroughs."
    },
    "howto": {
     "firm": "1. Choose output and containment.\n2. Check what containment costs you in profit.\n3. Submit by Sunday night.",
@@ -295,7 +295,7 @@
     "firm": "Same decision. Forecast the Ether carefully."
    },
    "tips": "Adaptation vs mitigation. Then fat tails: the odds of the Breach rise with the Ether above 2.0. The Breach is a draw, not a certainty.",
-   "example": "Marsh End spending half its budget on defense cuts slime damage by 20% this round and does nothing for the sky. The whole budget cuts it by 40%, which is as far as defense goes."
+   "example": "Marsh End spending half its budget on defense cuts slime damage by 20% this round and leaves the Ether where it is. The whole budget cuts it by 40%, which is as far as defense goes."
   }
  },
  {

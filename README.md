@@ -1,6 +1,6 @@
 # Ghost Emissions
 
-A semester-long climate economics game for an undergraduate class loosely inspired by Ghostbusters. We're here to save the world. Teams run boroughs of one city, each student runs a business, and everyone shares the sky. Ghost emissions stand in for greenhouse gases, the Ether for global temperature, slime damage for climate damages. The model underneath is a stock pollutant with linear marginal abatement costs, quadratic damages, concave business revenue, and a $200 per ton optimum.
+A semester-long climate economics game for an undergraduate class loosely inspired by Ghostbusters. We're here to save the world. Teams run boroughs of one city, each student runs a business, and all nine boroughs sit under one atmosphere. Ghost emissions stand in for greenhouse gases, the Ether for global temperature, slime damage for climate damages. The model underneath is a stock pollutant with linear marginal abatement costs, quadratic damages, concave business revenue, and a $200 per ton optimum.
 
 Built by Casey Wichman (with the help of Claude) for ECON 4210 at Georgia Tech.
 
