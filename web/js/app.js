@@ -99,9 +99,9 @@ async function route() {
 function viewAuth() {
   shell("signin", `<div class="auth card">
     <h2 style="display:flex;align-items:center;gap:8px">${GHOST_SVG(26)} Ghost Emissions</h2>
-    <p class="small">One city. Nine boroughs. One atmosphere above all of them.</p>
+    <p class="small">You run a business in one of nine boroughs in a city. You want to be profitable, but economic activity emits ghosts, which cause slime damage to everyone in the city, and containing them is costly. Each borough's mayor, rotating among the business owners, can set policies to contain ghosts and generate benefits (fewer ghosts released, less slime damage), but has to balance those benefits against the cost of containing them.</p>
     <div class="seg"><button class="on" data-m="in">Sign in</button><button data-m="up">Create account</button></div>
-    <div id="up" style="display:none"><label class="lab">Class code</label><input class="field" id="code" placeholder="from your syllabus"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"></div>
+    <div id="up" style="display:none"><label class="lab">Class code</label><input class="field" id="code" placeholder="from Canvas"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"></div>
     <label class="lab">Email</label><input class="field" id="email" type="email">
     <label class="lab">Password</label><input class="field" id="pw" type="password">
     <button class="btn" id="go">Sign in</button>
@@ -380,7 +380,7 @@ async function viewBoard() {
   const lb = order.map((id, i) => { const t = teamsAll.find(x => x.id === id); const pi = prevOrder.indexOf(id); return { name: t?.name ?? "?", score: scores[id].score, share: scores[id].containShare, delta: pi < 0 ? 0 : pi - i }; });
   const mapData = teamsAll.map(t => { const b = bos?.find(x => x.team_id === t.id)?.data; return { key: t.borough_key, name: t.name, haunt: b?.slimeDamage ?? 0, ghosts: b?.ghosts ?? 0, tax: b?.policy?.kind === "tax" ? b.policy.tau : b?.permitPrice ?? 0, contain: b ? b.contained / Math.max(1, b.baseTons) : 0 }; });
   const brief = last.config?.briefing?.student;
-  shell("board", `<div class="hdr" style="align-items:center"><div><div class="eyebrow">The Institute · weekly PKE reading</div><h2>Round ${last.number} results</h2></div></div>
+  shell("board", `<div class="hdr" style="align-items:center"><div><div class="eyebrow">The Institute · weekly Ether reading</div><h2>Round ${last.number} results</h2></div></div>
     <div class="strip"><div class="kpi"><div class="eyebrow">The Ether</div><div class="num" style="color:var(--ecto-deep)">${T.ether.toFixed(2)}</div><div class="small">of 4.0 · danger line 2.0</div></div>
       <div class="kpi"><div class="eyebrow">Ghost concentration</div><div class="num">${Math.round(T.concentration).toLocaleString()} t</div><div class="small">+ ${Math.round(T.emitted).toLocaleString()} t this round</div></div>
       <div class="kpi"><div class="eyebrow">City slime damage</div><div class="num" style="color:var(--haunt)">${fmt(T.slimeDamage)}</div><div class="small">this round</div></div>

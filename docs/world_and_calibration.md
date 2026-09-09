@@ -8,7 +8,9 @@ Two parts. Part A is the one-page world sheet students read in week 1. Part B is
 
 ### The world
 
-One city, nine boroughs, one atmosphere above all of them. Businesses make things. Making things releases ghost emissions, which accumulate in the air as ghost concentration. No borough owns the concentration and no borough can clear it. As concentration rises the Ether rises, and slime damage costs every borough money. Some boroughs are hit harder than others.
+You run a business in one of nine boroughs in a city. You want to be profitable, but economic activity emits ghosts, which cause slime damage to everyone in the city, and containing them is costly. Each borough's mayor, rotating among the business owners, can set policies to contain ghosts and generate benefits (fewer ghosts released, less slime damage), but has to balance those benefits against the cost of containing them.
+
+Ghosts accumulate in the air as ghost concentration. No borough owns the concentration and no borough can clear it. As concentration rises the Ether rises, and slime damage costs every borough money. Some boroughs are hit harder than others.
 
 Containing ghosts costs the business that contains them. The damage avoided lands on all nine boroughs. That gap is the problem the game is about.
 
