@@ -84,7 +84,7 @@ async function route() {
   if (recovering) return viewRecovery();
   const h = (location.hash || "#firm").slice(1);
   const { data: { session } } = await sb.auth.getSession();
-  if (session && !me && h !== "board") return viewJoin();
+  if (session && !me && h !== "board") return viewJoin(session.user?.email ?? "");
   if (!me && h !== "board") return viewAuth();
   if (h === "signin") return viewAuth();
   if (h === "board") return viewBoard();
@@ -101,7 +101,7 @@ function viewAuth() {
     <h2 style="display:flex;align-items:center;gap:8px">${GHOST_SVG(26)} Ghost Emissions</h2>
     <p class="small">You run a business in one of nine boroughs in a city. You want to be profitable, but economic activity emits ghosts, which cause slime damage to everyone in the city, and containing them is costly. Each borough's mayor, rotating among the business owners, can set policies to contain ghosts and generate benefits (fewer ghosts released, less slime damage), but has to balance those benefits against the cost of containing them.</p>
     <div class="seg"><button class="on" data-m="in">Sign in</button><button data-m="up">Create account</button></div>
-    <div id="up" style="display:none"><label class="lab">Class code</label><input class="field" id="code" placeholder="from Canvas"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"></div>
+    <div id="up" style="display:none"><label class="lab">Class code</label><input class="field" id="code" placeholder="from Canvas" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"></div>
     <label class="lab">Email</label><input class="field" id="email" type="email">
     <label class="lab">Password</label><input class="field" id="pw" type="password">
     <button class="btn" id="go">Sign in</button>
@@ -113,7 +113,7 @@ function viewAuth() {
     const email = $("#email").value.trim(), password = $("#pw").value;
     let err;
     if (mode === "up") {
-      const code = $("#code").value.trim(), name = $("#name").value.trim();
+      const code = $("#code").value.trim().toUpperCase(), name = $("#name").value.trim();
       if (!code || !name) return $("#msg").innerHTML = `<div class="msg">Enter the class code and your name.</div>`;
       const { data: okCode, error: e0 } = await sb.rpc("class_exists", { p_code: code });
       if (e0 || !okCode) return $("#msg").innerHTML = `<div class="msg">That class code did not match. Check the code on Canvas.</div>`;
@@ -127,10 +127,14 @@ function viewAuth() {
   $("#reset").onclick = async () => { const { error } = await sb.auth.resetPasswordForEmail($("#email").value.trim(), { redirectTo: location.href.split("#")[0] }); $("#msg").innerHTML = `<div class="msg ${error ? "" : "ok"}">${error ? esc(error.message) : "Check your email for a reset link."}</div>`; };
 }
 
-function viewJoin() {
-  shell("signin", `<div class="auth card"><h2>Join your class</h2><p class="small">You are signed in but not in a class yet.</p><label class="lab">Class code</label><input class="field" id="code"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"><button class="btn" id="go">Join</button><div id="msg"></div></div>`);
+function viewJoin(email) {
+  // The app bar only offers Sign out once a student row exists, so an account
+  // that is signed in but not in any class had no way back to the sign-in form.
+  // Name the account and give it its own sign-out here.
+  shell("signin", `<div class="auth card"><h2>Join your class</h2><p class="small">You are signed in as <b>${esc(email || "an unknown account")}</b> but not in a class yet. If that is not the right account, sign out and sign in again.</p><label class="lab">Class code</label><input class="field" id="code" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"><button class="btn" id="go">Join</button><button class="btn ghost" id="jsignout">Sign out</button><div id="msg"></div></div>`);
+  $("#jsignout").onclick = async () => { await sb.auth.signOut(); me = null; team = null; location.hash = "#signin"; route(); };
   $("#go").onclick = async () => {
-    const { error } = await sb.rpc("join_class", { p_code: $("#code").value.trim(), p_name: $("#name").value.trim() });
+    const { error } = await sb.rpc("join_class", { p_code: $("#code").value.trim().toUpperCase(), p_name: $("#name").value.trim() });
     if (error) return $("#msg").innerHTML = `<div class="msg">${/Unknown/.test(error.message) ? "That class code did not match." : esc(error.message)}</div>`;
     await loadMe(); location.hash = "#firm"; route();
   };
