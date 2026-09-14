@@ -25,6 +25,10 @@ async function callFn(name, body) {
 
 // ---------- boot ----------
 let recovering = false, booted = false;
+// Whether an auth session exists, which is not the same as being in a class. A
+// signed-in account with no student row belongs on the join screen, and the app
+// bar has to offer it Sign out rather than Sign in.
+let hasSession = false;
 async function boot() {
   sb.auth.onAuthStateChange((e) => { if (e === "PASSWORD_RECOVERY") { recovering = true; if (booted) viewRecovery(); } });
   const url = new URL(location.href);
@@ -65,14 +69,23 @@ async function publicClassId() {
 }
 
 // ---------- shell ----------
+// Setting the hash alone does nothing when it is already #signin, so clear the
+// cached state and re-route explicitly.
+async function signOut() {
+  await sb.auth.signOut();
+  me = null; team = null; cls = null; teammates = []; isInstructor = false; hasSession = false;
+  location.hash = "#signin";
+  route();
+}
+
 function shell(active, inner) {
   const nav = me && !isInstructor ? [["firm", "My business"], ["borough", "My borough"], ["board", "The city"]] : isInstructor ? [["board", "The city"], ["instructor", "Instructor"]] : [["board", "The city"]];
   $("#app").innerHTML = `
   <div class="appbar"><a class="brand" href="#board">${GHOST_SVG(18)} Ghost Emissions</a>
     <nav>${nav.map(([k, l]) => `<a href="#${k}" class="${active === k ? "on" : ""}">${l}</a>`).join("")}</nav>
-    <span class="who">${me ? `${esc(me.display_name)}${team ? " · " + esc(team.name) : ""} <a href="#" id="signout">Sign out</a>` : `<a href="#signin">Sign in</a>`}</span></div>
+    <span class="who">${me ? `${esc(me.display_name)}${team ? " · " + esc(team.name) : ""} <a href="#" id="signout">Sign out</a>` : hasSession ? `<a href="#" id="signout">Sign out</a>` : `<a href="#signin">Sign in</a>`}</span></div>
   <div class="wrap">${inner}</div>`;
-  $("#signout")?.addEventListener("click", async e => { e.preventDefault(); await sb.auth.signOut(); location.hash = "#signin"; });
+  $("#signout")?.addEventListener("click", async e => { e.preventDefault(); await signOut(); });
 }
 function drawer(title, body, open = false) { return `<details ${open ? "open" : ""}><summary>${title}</summary><div class="body">${body}</div></details>`; }
 function keyDrawer(extra = []) { return drawer("Key", `<div class="glos">${[...KEY_ROWS, ...extra].map(([a, b]) => `<b>${a}</b><span>${b}</span>`).join("")}</div>`); }
@@ -84,6 +97,7 @@ async function route() {
   if (recovering) return viewRecovery();
   const h = (location.hash || "#firm").slice(1);
   const { data: { session } } = await sb.auth.getSession();
+  hasSession = !!session;
   if (session && !me && h !== "board") return viewJoin(session.user?.email ?? "");
   if (!me && h !== "board") return viewAuth();
   if (h === "signin") return viewAuth();
@@ -132,7 +146,7 @@ function viewJoin(email) {
   // that is signed in but not in any class had no way back to the sign-in form.
   // Name the account and give it its own sign-out here.
   shell("signin", `<div class="auth card"><h2>Join your class</h2><p class="small">You are signed in as <b>${esc(email || "an unknown account")}</b> but not in a class yet. If that is not the right account, sign out and sign in again.</p><label class="lab">Class code</label><input class="field" id="code" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false"><label class="lab">Your name (as on the roster)</label><input class="field" id="name"><button class="btn" id="go">Join</button><button class="btn ghost" id="jsignout">Sign out</button><div id="msg"></div></div>`);
-  $("#jsignout").onclick = async () => { await sb.auth.signOut(); me = null; team = null; location.hash = "#signin"; route(); };
+  $("#jsignout").onclick = signOut;
   $("#go").onclick = async () => {
     const { error } = await sb.rpc("join_class", { p_code: $("#code").value.trim().toUpperCase(), p_name: $("#name").value.trim() });
     if (error) return $("#msg").innerHTML = `<div class="msg">${/Unknown/.test(error.message) ? "That class code did not match." : esc(error.message)}</div>`;
