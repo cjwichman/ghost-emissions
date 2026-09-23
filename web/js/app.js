@@ -223,7 +223,10 @@ async function viewFirm() {
     $("#ev").textContent = ghosts.toFixed(1) + " t";
     if (policy.kind === "tax") { $("#cl").textContent = "Tax bill"; $("#cv").textContent = fmt(tax); } else { $("#cl").textContent = "Total containment cost"; $("#cv").textContent = fmt(cont); }
     $("#pv").textContent = fmt(profit); $("#pv").parentElement.className = "stat " + (profit < 0 ? "neg" : "pos");
-    if (fcfg.chart) $("#mac").innerHTML = drawMAC({ type: me.firm_type ?? 3, a, price: policy.kind === "tax" ? policy.tau : null, slope, label: "tax" });
+    // fcfg.md is the Institute's damage estimate per ton, set per round in the
+    // round config. Drawn as a reference line so a student can see where the
+    // city's cost of one more ton crosses their own cost of containing it.
+    if (fcfg.chart) $("#mac").innerHTML = drawMAC({ type: me.firm_type ?? 3, a, price: policy.kind === "tax" ? policy.tau : null, slope, label: "tax", md: fcfg.md ?? null });
     return { q, a };
   };
   const serverConfirm = debounce(async () => {
@@ -234,7 +237,7 @@ async function viewFirm() {
     $("#pv").textContent = fmt(r.firm.profit); $("#pv").parentElement.className = "stat " + (r.firm.profit < 0 ? "neg" : "pos");
     $("#ev").textContent = r.firm.ghosts.toFixed(1) + " t";
     $("#cl").textContent = r.firm.permitBill >= 0 ? "Permits bought" : "Permits sold"; $("#cv").textContent = fmt(Math.abs(r.firm.permitBill));
-    if (fcfg.chart) $("#mac").innerHTML = drawMAC({ type: me.firm_type ?? 3, a: r.firm.a, price: r.policy.permitPrice, slope, label: "permit price" });
+    if (fcfg.chart) $("#mac").innerHTML = drawMAC({ type: me.firm_type ?? 3, a: r.firm.a, price: r.policy.permitPrice, slope, label: "permit price", md: fcfg.md ?? null });
   }, 150);
   const upd = () => { local(); serverConfirm(); };
   $("#q").oninput = upd; if (showA) $("#a").oninput = upd; upd();
@@ -357,7 +360,7 @@ async function viewBorough() {
     if (r.permitPrice != null && pl.policy?.kind === "cap") { $("#bl2").textContent = "Permit price"; $("#brv").textContent = fmt(r.permitPrice) + "/t"; }
     else if (pl.policy?.kind === "tax") { $("#bl2").textContent = "Tax revenue"; $("#brv").textContent = fmt(r.taxRevenue); }
     else { $("#bl2").textContent = "Business profits"; $("#brv").textContent = fmt(r.profits); }
-    if (bcfg.chart) $("#bmac").innerHTML = drawMAC({ borough: true, price: pl.policy?.kind === "tax" ? pl.policy.tau : null, md: 200, label: "your tax", techMult: p.techMult ?? 1, contained: r.contained / Math.max(1, r.contained + r.ghosts) });
+    if (bcfg.chart) $("#bmac").innerHTML = drawMAC({ borough: true, price: pl.policy?.kind === "tax" ? pl.policy.tau : null, md: bcfg.md ?? 200, label: "your tax", techMult: p.techMult ?? 1, contained: r.contained / Math.max(1, r.contained + r.ghosts) });
   }, 120);
   document.querySelectorAll("input[type=range]").forEach(el => el.oninput = upd); upd();
   const save = async isDraft => {
@@ -395,7 +398,24 @@ async function viewBoard() {
   const prevScores = rounds.length > 1 ? roBy[rounds[rounds.length - 2].id].totals.scores ?? {} : {};
   const rankOf = sc => Object.entries(sc).sort((a, b) => b[1].score - a[1].score).map(x => x[0]);
   const order = rankOf(scores), prevOrder = rankOf(prevScores);
-  const lb = order.map((id, i) => { const t = teamsAll.find(x => x.id === id); const pi = prevOrder.indexOf(id); return { name: t?.name ?? "?", score: scores[id].score, share: scores[id].containShare, delta: pi < 0 ? 0 : pi - i }; });
+  // Discounted welfare includes each borough's fixed income, which runs from
+  // 22,000 to 70,000 and swamps everything the boroughs decide. Subtracting the
+  // discounted stream of that income leaves what the decisions were worth:
+  // profits and tax revenue, less spending and slime damage. Same discount rate
+  // the borough chose, so the two figures stay comparable.
+  const endowment = (income, rate) => {
+    const beta = 1 / (1 + (rate ?? 0.03));
+    let acc = 0;
+    for (let t = 0; t < rounds.length; t++) acc += income * Math.pow(beta, t);
+    return acc;
+  };
+  const lb = order.map((id, i) => {
+    const t = teamsAll.find(x => x.id === id);
+    const pi = prevOrder.indexOf(id);
+    return { name: t?.name ?? "?", score: scores[id].score,
+             net: scores[id].score - endowment(t?.params?.income ?? 0, t?.discount_rate),
+             share: scores[id].containShare, delta: pi < 0 ? 0 : pi - i };
+  });
   const mapData = teamsAll.map(t => { const b = bos?.find(x => x.team_id === t.id)?.data; return { key: t.borough_key, name: t.name, haunt: b?.slimeDamage ?? 0, ghosts: b?.ghosts ?? 0, tax: b?.policy?.kind === "tax" ? b.policy.tau : b?.permitPrice ?? 0, contain: b ? b.contained / Math.max(1, b.baseTons) : 0 }; });
   const brief = last.config?.briefing?.student;
   shell("board", `<div class="hdr" style="align-items:center"><div><div class="eyebrow">The Institute · weekly Ether reading</div><h2>Round ${last.number} results</h2></div></div>
@@ -405,7 +425,7 @@ async function viewBoard() {
       <div class="kpi"><div class="eyebrow">Containment</div><div class="num">${Math.round(100 * T.contained / T.baseTons)}%</div><div class="small">of ghosts, city-wide</div></div></div>
     <div class="grid"><div class="panel"><h3>The Ether, round by round</h3><div class="sub">Green: what you all did. Dashed: if every borough contained at the city optimum.</div>${drawEther(series, T.coopEmissionsPerRound, T.emitted, 12)}<div class="legend"><span><i style="background:#6CC24A"></i>Actual</span><span><i style="background:#1B2233"></i>Cooperative path</span><span><i style="background:#E0713C"></i>Danger line</span></div></div>
       <div class="panel"><h3>The city</h3><div class="mapctl" id="mapctl"><button class="on" data-m="haunt">Slime damage</button><button data-m="tax">Price on ghosts</button><button data-m="ghosts">Ghosts</button><button data-m="contain">Containment</button></div><div id="map"></div><div class="legend" id="maplegend"></div></div></div>
-    <div class="grid" style="margin-top:20px"><div class="panel lb"><h3>Boroughs</h3><div class="sub">Thick bar: discounted welfare. Thin green bar: share of your ghosts contained so far.</div>${drawLeaderboard(lb)}</div>
+    <div class="grid" style="margin-top:20px"><div class="panel lb"><h3>Boroughs</h3><div class="sub">Thick bar: discounted welfare net of the borough's own income, so it shows what the borough's decisions were worth rather than what it started with. Thin green bar: share of that borough's ghosts contained so far. Rank is still total welfare.</div>${drawLeaderboard(lb)}</div>
       <div class="panel"><h3>From the Institute</h3><div class="sub">Round ${last.number}</div><div class="brief">${(brief ?? roBy[last.id].summary_md ?? "").split("\n").filter(Boolean).map(x => `<p>${esc(x)}</p>`).join("")}</div>${T.breach ? `<p class="msg">The Breach happened this round.</p>` : ""}${keyDrawer()}</div></div>`);
   const paint = m => { const { svg, legend } = drawMap(mapData, m); $("#map").innerHTML = svg; $("#maplegend").innerHTML = legend; };
   document.querySelectorAll("#mapctl button").forEach(b => b.onclick = () => { document.querySelectorAll("#mapctl button").forEach(x => x.classList.toggle("on", x === b)); paint(b.dataset.m); });

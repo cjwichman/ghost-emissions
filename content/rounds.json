@@ -66,13 +66,15 @@
      "q",
      "a"
     ],
-    "chart": false
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "target",
     "chart": true,
     "title": "Revise the target",
-    "text": "The chart now shows the $200 the city loses to one more ton, against your borough's cost of containing it."
+    "text": "The chart now shows the $200 the city loses to one more ton, against your borough's cost of containing it.",
+    "md": 200
    },
    "briefing": {
     "student": "The Institute has finished its damage assessment. One more ton of ghosts costs the city about $200 in slime damage over the rest of the semester. Your borough page now draws that $200 against your own cost of containing. Nothing binds anyone yet. Set a target and see how close your businesses come.",
@@ -91,7 +93,8 @@
      "q",
      "a"
     ],
-    "chart": false
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "rate",
@@ -115,7 +118,8 @@
      "q",
      "a"
     ],
-    "chart": false
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "budget",
@@ -145,7 +149,8 @@
      "q",
      "a"
     ],
-    "chart": false
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "vote",
@@ -174,13 +179,15 @@
      "a"
     ],
     "chart": true,
-    "title": "Contain ghosts, or pay for them"
+    "title": "Contain ghosts, or pay for them",
+    "md": 200
    },
    "borough": {
     "type": "instrument",
     "chart": true,
     "title": "Pick a policy tool and set its level",
-    "text": "Applies to all your businesses next round."
+    "text": "Applies to all your businesses next round.",
+    "md": 200
    },
    "briefing": {
     "student": "Mayors pick a tool: a ghost tax, a cap with tradeable permits, or a flat containment rule. Whatever you pick binds every business in your borough starting next week. Containment costs are known and steady right now, so all three tools reach the same outcome at the same stringency.",
@@ -199,13 +206,15 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "instrument",
     "chart": true,
     "title": "Keep or change your tool",
-    "text": "Containment costs change after decisions close. Taxes and caps respond differently."
+    "text": "Containment costs change after decisions close. Taxes and caps respond differently.",
+    "md": 200
    },
    "events": {
     "costShock": {
@@ -229,13 +238,15 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "instrument+budget",
     "chart": true,
     "title": "Set your tool and decide what to do with the revenue",
-    "text": "Tax revenue funds the budget. Subsidy returns it to businesses per ton contained. Defense protects households from slime damage."
+    "text": "Tax revenue funds the budget. Subsidy returns it to businesses per ton contained. Defense protects households from slime damage.",
+    "md": 200
    },
    "briefing": {
     "student": "Ghost taxes are collecting real revenue. Mayors decide where it goes: back to businesses as a subsidy per ton contained, into slime defense for households, or into reserve. A subsidy stacks on top of the tax and raises the return to containing. Your businesses can send you a suggestion through the note box.",
@@ -254,13 +265,15 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "instrument+budget",
     "chart": true,
     "title": "Fund trap R&D or not",
-    "text": "R&D spending lowers containment cost from next round on. The reduction is permanent."
+    "text": "R&D spending lowers containment cost from next round on. The reduction is permanent.",
+    "md": 200
    },
    "briefing": {
     "student": "Traps get cheaper if someone pays for the engineering. R&D spending this week lowers your borough's containment cost from next week on, and the reduction is permanent. The whole budget buys a 12% cut, half the budget buys 6%. A borough that spends late gets the same discount for fewer rounds.",
@@ -279,13 +292,15 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "instrument+budget",
     "chart": true,
     "title": "Containment or slime defense",
-    "text": "Defense reduces your own slime damage this round. Containment reduces every borough's damage in later rounds. The Breach may happen after decisions close."
+    "text": "Defense reduces your own slime damage this round. Containment reduces every borough's damage in later rounds. The Breach may happen after decisions close.",
+    "md": 200
    },
    "events": {
     "breach": {}
@@ -307,7 +322,8 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "yesno",
@@ -336,7 +352,8 @@
      "q",
      "a"
     ],
-    "chart": true
+    "chart": true,
+    "md": 200
    },
    "borough": {
     "type": "yesno",

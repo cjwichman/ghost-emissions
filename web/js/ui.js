@@ -125,6 +125,15 @@ export function drawMap(data, metric) {
 }
 
 export function drawLeaderboard(rows) {
-  const max = Math.max(1, ...rows.map(r => r.score));
-  return rows.map((r, i) => `<div class="r"><span class="rank">${i + 1}</span><span>${r.name}</span><div class="bars"><div class="b1" style="width:${100 * r.score / max}%"></div><div class="b2" style="width:${100 * (r.share ?? 0)}%"></div></div><span class="d ${r.delta > 0 ? "up" : r.delta < 0 ? "dn" : ""}">${r.delta > 0 ? "▲ " + r.delta : r.delta < 0 ? "▼ " + (-r.delta) : "—"}</span></div>`).join("");
+  // Scale the thick bar across the observed range rather than from zero. Scores
+  // sit in a narrow band, so a zero-anchored bar makes every borough look alike
+  // and overstates the distance between first and last.
+  const vals = rows.map(r => r.net ?? r.score);
+  const hi = Math.max(...vals), lo = Math.min(...vals), span = Math.max(1, hi - lo);
+  const width = v => 8 + 92 * (v - lo) / span;
+  // Net figures run in the hundreds against incomes in the tens of thousands, so
+  // print whole dollars. Rounding to thousands collapses the whole column.
+  const money = v => (v < 0 ? "\u2212$" : "+$") + Math.round(Math.abs(v)).toLocaleString();
+  return rows.map((r, i) => `<div class="r"><span class="rank">${i + 1}</span><span>${r.name}</span><div class="bars"><div class="b1" style="width:${width(r.net ?? r.score)}%"></div><div class="b2" style="width:${100 * (r.share ?? 0)}%"></div></div><span class="lbv">${r.net == null ? "" : money(r.net)}</span><span class="d ${r.delta > 0 ? "up" : r.delta < 0 ? "dn" : ""}">${r.delta > 0 ? "\u25b2 " + r.delta : r.delta < 0 ? "\u25bc " + (-r.delta) : "\u2014"}</span></div>`).join("");
 }
+
