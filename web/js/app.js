@@ -396,24 +396,31 @@ async function viewBoard() {
   const series = rounds.map(r => ({ n: r.number, ether: roBy[r.id].totals.ether }));
   const scores = T.scores ?? {};
   const prevScores = rounds.length > 1 ? roBy[rounds[rounds.length - 2].id].totals.scores ?? {} : {};
-  const rankOf = sc => Object.entries(sc).sort((a, b) => b[1].score - a[1].score).map(x => x[0]);
-  const order = rankOf(scores), prevOrder = rankOf(prevScores);
+  // Rank on welfare net of the borough's own income. Income is an endowment,
+  // fixed and identical every round, and including it sorts the boroughs by the
+  // hand they were dealt rather than by anything they decided. The previous
+  // round is ranked the same way so the arrows compare like with like.
+  const netOf = (id, sc, nRounds) => {
+    const t = teamsAll.find(x => x.id === id);
+    const beta = 1 / (1 + (t?.discount_rate ?? 0.03));
+    const income = t?.params?.income ?? 0;
+    let acc = 0;
+    for (let k = 0; k < nRounds; k++) acc += income * Math.pow(beta, k);
+    return sc[id].score - acc;
+  };
+  const rankOf = (sc, nRounds) => Object.keys(sc).sort((a, b) => netOf(b, sc, nRounds) - netOf(a, sc, nRounds));
+  const order = rankOf(scores, rounds.length);
+  const prevOrder = rounds.length > 1 ? rankOf(prevScores, rounds.length - 1) : [];
   // Discounted welfare includes each borough's fixed income, which runs from
   // 22,000 to 70,000 and swamps everything the boroughs decide. Subtracting the
   // discounted stream of that income leaves what the decisions were worth:
   // profits and tax revenue, less spending and slime damage. Same discount rate
   // the borough chose, so the two figures stay comparable.
-  const endowment = (income, rate) => {
-    const beta = 1 / (1 + (rate ?? 0.03));
-    let acc = 0;
-    for (let t = 0; t < rounds.length; t++) acc += income * Math.pow(beta, t);
-    return acc;
-  };
   const lb = order.map((id, i) => {
     const t = teamsAll.find(x => x.id === id);
     const pi = prevOrder.indexOf(id);
     return { name: t?.name ?? "?", score: scores[id].score,
-             net: scores[id].score - endowment(t?.params?.income ?? 0, t?.discount_rate),
+             net: netOf(id, scores, rounds.length),
              share: scores[id].containShare, delta: pi < 0 ? 0 : pi - i };
   });
   const mapData = teamsAll.map(t => { const b = bos?.find(x => x.team_id === t.id)?.data; return { key: t.borough_key, name: t.name, haunt: b?.slimeDamage ?? 0, ghosts: b?.ghosts ?? 0, tax: b?.policy?.kind === "tax" ? b.policy.tau : b?.permitPrice ?? 0, contain: b ? b.contained / Math.max(1, b.baseTons) : 0 }; });
@@ -425,7 +432,7 @@ async function viewBoard() {
       <div class="kpi"><div class="eyebrow">Containment</div><div class="num">${Math.round(100 * T.contained / T.baseTons)}%</div><div class="small">of ghosts, city-wide</div></div></div>
     <div class="grid"><div class="panel"><h3>The Ether, round by round</h3><div class="sub">Green: what you all did. Dashed: if every borough contained at the city optimum.</div>${drawEther(series, T.coopEmissionsPerRound, T.emitted, 12)}<div class="legend"><span><i style="background:#6CC24A"></i>Actual</span><span><i style="background:#1B2233"></i>Cooperative path</span><span><i style="background:#E0713C"></i>Danger line</span></div></div>
       <div class="panel"><h3>The city</h3><div class="mapctl" id="mapctl"><button class="on" data-m="haunt">Slime damage</button><button data-m="tax">Price on ghosts</button><button data-m="ghosts">Ghosts</button><button data-m="contain">Containment</button></div><div id="map"></div><div class="legend" id="maplegend"></div></div></div>
-    <div class="grid" style="margin-top:20px"><div class="panel lb"><h3>Boroughs</h3><div class="sub">Thick bar: discounted welfare net of the borough's own income, so it shows what the borough's decisions were worth rather than what it started with. Thin green bar: share of that borough's ghosts contained so far. Rank is still total welfare.</div>${drawLeaderboard(lb)}</div>
+    <div class="grid" style="margin-top:20px"><div class="panel lb"><h3>Boroughs</h3><div class="sub">Boroughs are ranked on discounted welfare net of their own income, so the ranking reflects what each borough decided rather than the income it was dealt. The thick bar and the figure are that net welfare. The thin green bar is the share of that borough's ghosts contained so far. Total welfare, income included, is in brackets.</div>${drawLeaderboard(lb)}</div>
       <div class="panel"><h3>From the Institute</h3><div class="sub">Round ${last.number}</div><div class="brief">${(brief ?? roBy[last.id].summary_md ?? "").split("\n").filter(Boolean).map(x => `<p>${esc(x)}</p>`).join("")}</div>${T.breach ? `<p class="msg">The Breach happened this round.</p>` : ""}${keyDrawer()}</div></div>`);
   const paint = m => { const { svg, legend } = drawMap(mapData, m); $("#map").innerHTML = svg; $("#maplegend").innerHTML = legend; };
   document.querySelectorAll("#mapctl button").forEach(b => b.onclick = () => { document.querySelectorAll("#mapctl button").forEach(x => x.classList.toggle("on", x === b)); paint(b.dataset.m); });

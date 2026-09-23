@@ -145,6 +145,9 @@ export function drawLeaderboard(rows) {
   // Net figures run in the hundreds against incomes in the tens of thousands, so
   // print whole dollars. Rounding to thousands collapses the whole column.
   const money = v => (v < 0 ? "\u2212$" : "+$") + Math.round(Math.abs(v)).toLocaleString();
-  return rows.map((r, i) => `<div class="r"><span class="rank">${i + 1}</span><span>${r.name}</span><div class="bars"><div class="b1" style="width:${width(r.net ?? r.score)}%"></div><div class="b2" style="width:${100 * (r.share ?? 0)}%"></div></div><span class="lbv">${r.net == null ? "" : money(r.net)}</span><span class="d ${r.delta > 0 ? "up" : r.delta < 0 ? "dn" : ""}">${r.delta > 0 ? "\u25b2 " + r.delta : r.delta < 0 ? "\u25bc " + (-r.delta) : "\u2014"}</span></div>`).join("");
+  // Total welfare, shown in brackets underneath. Rounded to thousands: it runs
+  // to six figures and only the order of magnitude matters next to the net.
+  const money2 = v => "$" + Math.round(v / 1000).toLocaleString() + "k";
+  return rows.map((r, i) => `<div class="r"><span class="rank">${i + 1}</span><span>${r.name}</span><div class="bars"><div class="b1" style="width:${width(r.net ?? r.score)}%"></div><div class="b2" style="width:${100 * (r.share ?? 0)}%"></div></div><span class="lbv">${r.net == null ? "" : money(r.net)}${r.score == null ? "" : `<span class="lbt">(${money2(r.score)})</span>`}</span><span class="d ${r.delta > 0 ? "up" : r.delta < 0 ? "dn" : ""}">${r.delta > 0 ? "\u25b2 " + r.delta : r.delta < 0 ? "\u25bc " + (-r.delta) : "\u2014"}</span></div>`).join("");
 }
 
