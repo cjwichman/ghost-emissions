@@ -33,7 +33,7 @@ const mono = 'font-family="IBM Plex Mono" font-size="10" fill="#5A6272"';
 // MAC chart. Firm: linear MAC = slope * a. Borough: aggregate MAC (piecewise, drawn as curve).
 export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borough = false, md = null, techMult = 1, contained = 0 }) {
   const W = 340, H = 190, x0 = 40, y0 = 160, xw = 290, yh = 150;
-  const ymax = borough ? 260 : Math.max(slope, price ?? 0) * 1.05;   // dollars per ton at the top
+  const ymax = borough ? 260 : Math.max(slope, price ?? 0, md ?? 0) * 1.05;   // dollars per ton at the top
   const Y = v => y0 - yh * Math.min(1, v / ymax);
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="${x0}" y1="${y0}" x2="${x0 + xw}" y2="${y0}" stroke="#D8DCE2"/><line x1="${x0}" y1="10" x2="${x0}" y2="${y0}" stroke="#D8DCE2"/>`;
   if (!borough) {
@@ -43,8 +43,19 @@ export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borou
       s += `<line x1="${x0}" y1="${py}" x2="${x0 + xw}" y2="${py}" stroke="#E0713C" stroke-width="2" stroke-dasharray="5 4"/><text x="${x0 + xw - 4}" y="${py - 6}" font-size="11" fill="#E0713C" text-anchor="end" font-family="IBM Plex Mono">${label} $${Math.round(price)}</text>`;
       s += `<polygon points="${x0},${y0} ${px},${y0} ${px},${py}" fill="#6CC24A" opacity=".3"/>`;
     }
+    // What one more ton costs the city, against what it costs this business to
+    // contain it. Where the two cross is the containment the harm would justify.
+    if (md != null) {
+      const my = Y(md), mx = x0 + xw * Math.min(1, md / slope);
+      s += `<line x1="${x0}" y1="${my}" x2="${x0 + xw}" y2="${my}" stroke="#6E5A9E" stroke-width="2" stroke-dasharray="5 4"/>`;
+      s += `<line x1="${mx}" y1="${my}" x2="${mx}" y2="${y0}" stroke="#6E5A9E" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`;
+      s += `<text x="${x0 + xw - 2}" y="${my - 6}" font-size="11" fill="#6E5A9E" font-family="IBM Plex Mono" text-anchor="end">harm to the city $${md}/t</text>`;
+      if (md < slope) s += `<text x="${mx}" y="${y0 + 26}" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" fill="#6E5A9E">${Math.round(100 * md / slope)}%</text>`;
+    }
     const ax = x0 + xw * a, ay = Y(slope * a);
     s += marker(ax, ay, "#3F8A29");
+    // Axis values. Without them the line is a slope with no magnitude.
+    for (const v of [0, ymax / 2]) s += `<text x="${x0 - 6}" y="${Y(v) + 4}" ${mono} text-anchor="end">${Math.round(v)}</text>`;
     s += `<text x="${x0}" y="178" ${mono}>0%</text><text x="${x0 + xw}" y="178" ${mono} text-anchor="end">100% contained</text><text x="8" y="14" ${mono}>$/t</text>`;
   } else {
     // aggregate MAC across five types with slopes 200*c*techMult: piecewise-linear in tons; drawn against share contained
