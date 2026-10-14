@@ -162,7 +162,7 @@
     "title": "Vote on the city's price on ghosts"
    },
    "briefing": {
-    "student": "Each borough faces a different cost per ghost, because income and exposure differ across the city. This week every borough reports its own number and votes on one price for all nine. The median vote wins. Boroughs above and below the median get a price they did not pick.",
+    "student": "Each borough faces a different marginal damage per ton, because income and exposure differ across the city. This week every borough reports its own number and votes on one price for all nine. The median vote wins. Boroughs above and below the median get a price they did not pick.",
     "firm": "Same decision. Forecast the vote."
    },
    "tips": "Show the distribution of votes Monday. Low-exposure boroughs vote low. Talk equity weights.",
@@ -249,7 +249,7 @@
     "md": 200
    },
    "briefing": {
-    "student": "Ghost taxes are collecting real revenue. Mayors decide where it goes: back to businesses as a subsidy per ton contained, into slime defense for households, or into reserve. A subsidy stacks on top of the tax and raises the return to containing. Your businesses can send you a suggestion through the note box.",
+    "student": "Ghost taxes are collecting real revenue. Mayors decide where it goes: back to businesses as a subsidy per ton contained, into slime defense for households, or into reserve. A subsidy raises the effective price per ton contained to the tax plus the subsidy. Your businesses can send you a suggestion through the note box.",
     "firm": "Same decision. Ask your mayor where the tax money goes."
    },
    "tips": "Incidence: businesses complain in notes. Read one aloud. Ask who bears the tax.",

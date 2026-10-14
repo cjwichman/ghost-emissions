@@ -31,7 +31,7 @@ export const KEY_ROWS = [
 const mono = 'font-family="IBM Plex Mono" font-size="10" fill="#5A6272"';
 
 // MAC chart. Firm: linear MAC = slope * a. Borough: aggregate MAC (piecewise, drawn as curve).
-export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borough = false, md = null, techMult = 1, contained = 0 }) {
+export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borough = false, md = null, ownMd = null, ownLabel = "your borough", techMult = 1, contained = 0 }) {
   const W = 340, H = 190, x0 = 40, y0 = 160, xw = 290, yh = 150;
   const ymax = borough ? 260 : Math.max(slope, price ?? 0, md ?? 0) * 1.05;   // dollars per ton at the top
   const Y = v => y0 - yh * Math.min(1, v / ymax);
@@ -49,8 +49,13 @@ export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borou
       const my = Y(md), mx = x0 + xw * Math.min(1, md / slope);
       s += `<line x1="${x0}" y1="${my}" x2="${x0 + xw}" y2="${my}" stroke="#6E5A9E" stroke-width="2" stroke-dasharray="5 4"/>`;
       s += `<line x1="${mx}" y1="${my}" x2="${mx}" y2="${y0}" stroke="#6E5A9E" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`;
-      s += `<text x="${x0 + xw - 2}" y="${my - 6}" font-size="11" fill="#6E5A9E" font-family="IBM Plex Mono" text-anchor="end">harm to the city $${md}/t</text>`;
-      if (md < slope) s += `<text x="${mx}" y="${y0 + 26}" font-family="IBM Plex Mono" font-size="10" text-anchor="middle" fill="#6E5A9E">${Math.round(100 * md / slope)}%</text>`;
+      s += `<text x="${x0 + xw - 2}" y="${my - 6}" font-size="11" fill="#6E5A9E" font-family="IBM Plex Mono" text-anchor="end">city damage $${md}/t${md < slope ? ` \u00b7 ${Math.round(100 * md / slope)}%` : ""}</text>`;
+    }
+    if (ownMd != null && ownMd > 0) {
+      const oy = Y(ownMd), ox = x0 + xw * Math.min(1, ownMd / slope);
+      s += `<line x1="${x0}" y1="${oy}" x2="${x0 + xw}" y2="${oy}" stroke="#1C7293" stroke-width="2" stroke-dasharray="5 4"/>`;
+      if (ownMd < slope) s += `<line x1="${ox}" y1="${oy}" x2="${ox}" y2="${y0}" stroke="#1C7293" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`;
+      s += `<text x="${x0 + xw - 2}" y="${oy - 6}" font-size="11" fill="#1C7293" font-family="IBM Plex Mono" text-anchor="end">your borough $${Math.round(ownMd)}/t${ownMd < slope ? ` \u00b7 ${Math.round(100 * ownMd / slope)}%` : ""}</text>`;
     }
     const ax = x0 + xw * a, ay = Y(slope * a);
     s += marker(ax, ay, "#3F8A29");
@@ -61,7 +66,8 @@ export function drawMAC({ a = 0, price = null, slope = 600, label = "tax", borou
     // aggregate MAC across five types with slopes 200*c*techMult: piecewise-linear in tons; drawn against share contained
     const pts = []; for (let i = 0; i <= 40; i++) { const p = ymax * i / 40; const share = [1, 2, 3, 4, 5].reduce((t, c) => t + Math.min(1, p / (200 * c * techMult)), 0) / 5; pts.push([x0 + xw * share, Y(p)]); }
     s += `<path d="M${pts.map(p => p.join(",")).join(" L")}" fill="none" stroke="#1B2233" stroke-width="2"/>`;
-    if (md != null) s += `<line x1="${x0}" y1="${Y(md)}" x2="${x0 + xw}" y2="${Y(md)}" stroke="#6E5A9E" stroke-width="2" stroke-dasharray="5 4"/><text x="${x0 + xw - 4}" y="${Y(md) - 6}" font-size="11" fill="#6E5A9E" text-anchor="end" font-family="IBM Plex Mono">one more ghost costs the city ≈ $${md}</text>`;
+    if (md != null) s += `<line x1="${x0}" y1="${Y(md)}" x2="${x0 + xw}" y2="${Y(md)}" stroke="#6E5A9E" stroke-width="2" stroke-dasharray="5 4"/><text x="${x0 + xw - 4}" y="${Y(md) - 6}" font-size="11" fill="#6E5A9E" text-anchor="end" font-family="IBM Plex Mono">city damage $${md}/t</text>`;
+    if (ownMd != null && ownMd > 0) s += `<line x1="${x0}" y1="${Y(ownMd)}" x2="${x0 + xw}" y2="${Y(ownMd)}" stroke="#1C7293" stroke-width="2" stroke-dasharray="5 4"/><text x="${x0 + xw - 4}" y="${Y(ownMd) - 6}" font-size="11" fill="#1C7293" text-anchor="end" font-family="IBM Plex Mono">your borough $${Math.round(ownMd)}/t</text>`;
     if (price != null) { s += `<line x1="${x0}" y1="${Y(price)}" x2="${x0 + xw}" y2="${Y(price)}" stroke="#E0713C" stroke-width="2" stroke-dasharray="5 4"/><text x="${x0 + xw - 4}" y="${Y(price) - 6}" font-size="11" fill="#E0713C" text-anchor="end" font-family="IBM Plex Mono">${label} $${Math.round(price)}</text>`; }
     const cx = x0 + xw * contained; const cy = pts.reduce((best, p) => Math.abs(p[0] - cx) < Math.abs(best[0] - cx) ? p : best, pts[0])[1];
     s += marker(cx, cy, "#E0713C");
