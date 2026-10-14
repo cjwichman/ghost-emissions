@@ -88,6 +88,64 @@ function shell(active, inner) {
   $("#signout")?.addEventListener("click", async e => { e.preventDefault(); await signOut(); });
 }
 function drawer(title, body, open = false) { return `<details ${open ? "open" : ""}><summary>${title}</summary><div class="body">${body}</div></details>`; }
+
+// ---------- history ----------
+// The borough form changes week to week, so a stored payload carries whatever
+// fields that round asked for. Render whichever are present as one line.
+function decisionText(pl) {
+  if (!pl) return "\u2014";
+  const bits = [];
+  const p = pl.policy;
+  if (p && p.kind && p.kind !== "none") {
+    bits.push(p.kind === "tax" ? `tax ${fmt(p.tau)}/t`
+            : p.kind === "cap" ? `cap ${Math.round(p.capTons)} t`
+            : `containment rule ${Math.round((p.aMin ?? 0) * 100)}%`);
+  }
+  if (pl.target != null) bits.push(`target ${Math.round(pl.target * 100)}%`);
+  if (pl.discountRate != null) bits.push(`discount rate ${(pl.discountRate * 100).toFixed(1)}%`);
+  if (pl.vote != null) bits.push(`voted ${fmt(pl.vote)}/t`);
+  if (pl.choice) bits.push(pl.choice === "yes" ? "paid in" : "did not pay in");
+  const b = pl.budget;
+  if (b) {
+    const label = { subsidy: "subsidy", rd: "R&D", defense: "defense" };
+    const spend = ["subsidy", "rd", "defense"].filter(k => (b[k] ?? 0) > 0.005)
+      .map(k => `${label[k]} ${Math.round(b[k] * 100)}%`);
+    // Rounds before the budget existed still carry a default all-reserve budget
+    // in their payload. Only say so when the reserve was an actual choice.
+    if (spend.length) bits.push(spend.join(", "));
+    else if (!bits.length) bits.push("budget all in reserve");
+  }
+  return bits.length ? bits.join(" \u00b7 ") : "\u2014";
+}
+
+// Every resolved round, oldest first, paired with that round's outcome row.
+async function history(table, col, id) {
+  const rs = (await lastResolved(99)).sort((a, b) => a.number - b.number);
+  if (!rs.length) return [];
+  const { data } = await sb.from(table).select("round_id,data").eq(col, id).in("round_id", rs.map(r => r.id));
+  const num = Object.fromEntries(rs.map(r => [r.id, r.number]));
+  return (data ?? []).map(x => ({ n: num[x.round_id], d: x.data })).sort((a, b) => a.n - b.n);
+}
+
+function firmHistory(rows) {
+  if (!rows.length) return `<p class="small">Nothing has resolved yet. Your first results appear after Monday.</p>`;
+  // Only show the money column once a policy has actually charged someone.
+  const paid = rows.some(r => (r.d.taxBill ?? 0) > 0 || (r.d.permitBill ?? 0) !== 0 || (r.d.subsidyIn ?? 0) > 0);
+  return `<table><tr><th>Round</th><th>Output</th><th>Contained</th><th>Ghosts released</th>${paid ? "<th>Tax, net of subsidy</th>" : ""}<th>Profit</th></tr>`
+    + rows.map(r => `<tr><td>${r.n}</td><td>${Math.round(r.d.q ?? 0)}</td><td>${Math.round((r.d.a ?? 0) * 100)}%</td><td>${(r.d.ghosts ?? 0).toFixed(1)} t</td>`
+        + `${paid ? `<td>${fmt((r.d.taxBill ?? 0) + (r.d.permitBill ?? 0) - (r.d.subsidyIn ?? 0))}</td>` : ""}`
+        + `<td>${fmt(r.d.profit ?? 0)}</td></tr>`).join("")
+    + `</table>`;
+}
+
+function boroughHistory(rows) {
+  if (!rows.length) return `<p class="small">Nothing has resolved yet.</p>`;
+  return `<table><tr><th>Round</th><th>What the mayor set</th><th>Ghosts</th><th>Contained</th><th>Slime damage</th><th>Welfare</th></tr>`
+    + rows.map(r => `<tr><td>${r.n}</td><td>${esc(decisionText(r.d.decision))}${r.d.defaulted ? ` <span class="small">(nobody submitted, so last week's repeated)</span>` : ""}</td>`
+        + `<td>${Math.round(r.d.ghosts ?? 0)} t</td><td>${Math.round(100 * (r.d.contained ?? 0) / Math.max(1, r.d.baseTons ?? 1))}%</td>`
+        + `<td>${fmt(r.d.slimeDamage ?? 0)}</td><td>${fmt(r.d.welfare ?? 0)}</td></tr>`).join("")
+    + `</table>`;
+}
 function keyDrawer(extra = []) { return drawer("Key", `<div class="glos">${[...KEY_ROWS, ...extra].map(([a, b]) => `<b>${a}</b><span>${b}</span>`).join("")}</div>`); }
 function closesText(r) { return r?.closes_at ? "closes " + new Date(r.closes_at).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : ""; }
 
@@ -174,6 +232,7 @@ async function viewFirm() {
   const closed = round.status !== "open";
   const q0 = mine?.q ?? 100, a0 = mine ? Number(mine.a) * 100 : 0;
   const prev = (await lastResolved(1))[0];
+  const myHistory = await history("firm_outcomes", "student_id", me.id);
   const T = TRADES[me.firm_type ?? 3] ?? TRADES[3];
   let policyLine = "No borough policy applies to you this round.";
   let policy = { kind: "none" };
@@ -208,6 +267,7 @@ async function viewFirm() {
     ${cfg.briefing?.firm ? drawer("From the Institute", `<div class="brief">${cfg.briefing.firm.split("\n").map(p => `<p>${esc(p)}</p>`).join("")}</div>`, true) : ""}
     ${drawer("Forecast for next round", `<p>What will the Ether read next Monday?${etherReading ? ` The current reading is ${etherReading}.` : ""}</p><input class="field" id="fc" type="number" step="0.01" min="0" max="4" value="${mine?.forecast ?? ""}" ${closed ? "disabled" : ""} placeholder="e.g. 0.75">`)}
     ${drawer("Your business", `<dl class="kv"><dt>Trade</dt><dd>${esc(T.blurb)}</dd><dt>Ghosts</dt><dd>Your business releases 0.2 t of ghosts per ${esc(T.unit.replace(/s$/, ""))} before containment.</dd><dt>Earnings</dt><dd>Demand falls as you make more. The first ${esc(T.unit.replace(/s$/, ""))} earns $150 and each one after that earns a little less, so at full output the last one earns nothing. Full output brings in $7,500 before containment and ghosts.</dd><dt>Containment</dt><dd>Cheap for the first few ghosts you contain, expensive for the last few.</dd></dl>`, round.number <= 1)}
+    ${drawer("Your results so far", firmHistory(myHistory), myHistory.length > 0)}
     ${keyDrawer(policy.kind === "tax" ? [["Ghost tax", "carbon tax"]] : policy.kind === "cap" ? [["Cap", "cap and trade"]] : [])}
   </div></div>`);
 
@@ -261,6 +321,7 @@ async function viewBorough() {
   const { data: bd } = await sb.from("borough_decisions").select("*").eq("round_id", round.id).eq("team_id", team.id).maybeSingle();
   const payload = bd?.payload ?? { policy: { kind: "none" }, budget: { subsidy: 0, rd: 0, defense: 0, reserve: 1 } };
   const prev = (await lastResolved(1))[0];
+  const boroughRounds = await history("borough_outcomes", "team_id", team.id);
   let lastFirms = [], lastB = null, rank = null;
   if (prev) {
     const { data: fo } = await sb.from("firm_outcomes").select("student_id,data").eq("round_id", prev.id).in("student_id", teammates.map(s => s.id));
@@ -309,6 +370,7 @@ async function viewBorough() {
     ${bcfg.chart ? `<div class="chart"><div id="bmac"></div><div class="cap">${esc(team.name)}'s marginal cost of containment against what one more ghost costs the whole city.</div></div>` : ""}
     ${drawer("Your businesses last week", lastFirms.length ? `<table><tr><th>Business</th><th>Contained</th><th>Profit</th><th>Note</th></tr>${lastFirms.map(f => `<tr><td>${esc(f.s?.firm_name ?? ((TRADES[f.data.type] ?? {}).trade ?? f.s?.display_name))}<div class="small">${esc(f.s?.display_name ?? "")}</div></td><td class="num">${Math.round(f.data.a * 100)}%</td><td class="num">${fmt(f.data.profit)}</td><td class="noteq">${esc(f.note ?? "—")}</td></tr>`).join("")}</table>` : `<p class="small">No results yet.</p>`, true)}
     ${cfg.briefing?.student ? drawer("From the Institute", `<div class="brief">${cfg.briefing.student.split("\n").map(x => `<p>${esc(x)}</p>`).join("")}</div>`, true) : ""}
+    ${drawer("What your borough has decided", boroughHistory(boroughRounds), boroughRounds.length > 0)}
     ${lastB ? drawer("Last week's results", `<dl class="kv"><dt>Ghosts</dt><dd>${Math.round(lastB.data.ghosts)} t</dd><dt>Slime damage</dt><dd>${fmt(lastB.data.slimeDamage)}</dd><dt>Welfare</dt><dd>${fmt(lastB.data.welfare)}</dd>${lastB.data.permitPrice != null ? `<dt>Permit price</dt><dd>${fmt(lastB.data.permitPrice)}/t</dd>` : ""}</dl>`) : ""}
     ${drawer(`${esc(team.name)}'s stats`, `<p class="small">${esc(p.blurb ?? "")}</p><dl class="kv"><dt>Income</dt><dd>${fmt(p.income)} a week.</dd><dt>Exposure</dt><dd>${exposureWord}. Slime damage costs ${esc(team.name)} about ${(p.exposure / 0.13).toFixed(1)}x the city average per point of Ether, relative to income.</dd><dt>Ghosts</dt><dd>${Math.round(20 * (p.ghostMult ?? 1))} t per business at full output (city average 20 t).</dd><dt>Traps</dt><dd>${trapWord}</dd></dl>`)}
     ${keyDrawer([["Ghost tax", "carbon tax"], ["Cap on ghosts", "cap and trade"], ["Containment rule", "performance standard"], ["Exposure", "damage sensitivity"]])}
